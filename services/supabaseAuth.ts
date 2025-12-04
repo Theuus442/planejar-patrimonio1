@@ -104,9 +104,9 @@ export const supabaseAuthService = {
       // Step 2: Create database user record with retry logic
       // The auth metadata is stored in Supabase Auth, but we also need it in the users table
       let user = null;
-      let retries = 3;
+      let dbRetries = 3;
 
-      while (retries > 0 && !user) {
+      while (dbRetries > 0 && !user) {
         try {
           user = await usersDB.createUser({
             id: authData.user.id,
@@ -118,8 +118,8 @@ export const supabaseAuthService = {
 
           if (user) break;
         } catch (dbError) {
-          retries--;
-          if (retries > 0) {
+          dbRetries--;
+          if (dbRetries > 0) {
             // Wait a bit before retrying
             await new Promise(resolve => setTimeout(resolve, 500));
           } else {
