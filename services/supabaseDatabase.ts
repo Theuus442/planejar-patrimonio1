@@ -159,13 +159,14 @@ export const usersDB = {
       .from('partner_qualification_data')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      // Suppress 404 errors (no qualification data exists yet) - this is normal for new users
-      if (error.code !== 'PGRST116') {
-        console.warn('Error fetching qualification data:', error.message || error);
-      }
+      console.warn('Error fetching qualification data:', error.message || error);
+      return null;
+    }
+
+    if (!data) {
       return null;
     }
 
