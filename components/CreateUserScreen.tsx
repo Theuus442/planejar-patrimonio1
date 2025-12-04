@@ -74,7 +74,17 @@ const CreateUserScreen: React.FC<CreateUserScreenProps> = ({ onBack, onCreateUse
                 onCreateUser?.();
             }, 1500);
         } catch (error: any) {
-            const errorMessage = error?.message || 'Erro ao criar usuário. Tente novamente.';
+            console.error('Error creating user:', error);
+            let errorMessage = 'Erro ao criar usuário. Tente novamente.';
+
+            if (error?.message) {
+                errorMessage = error.message;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            } else if (error?.code === '42501') {
+                errorMessage = 'Erro de permissão ao criar usuário. Entre em contato com o suporte.';
+            }
+
             setErrors({ submit: errorMessage });
         } finally {
             setIsLoading(false);
