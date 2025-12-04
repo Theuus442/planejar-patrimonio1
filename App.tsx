@@ -594,12 +594,25 @@ const App = () => {
       </div>
     </div>;
   }
-  
+
   if (store.userForPasswordChange) {
     return <ChangePasswordScreen user={store.userForPasswordChange} onPasswordChanged={store.actions.handlePasswordChanged} onCancel={store.actions.handleCancelPasswordChange} />;
   }
 
+  // Handle special routes (not requiring user to be logged in)
   if (!store.currentUser) {
+    if (currentRoute === '/esqueci-senha') {
+      return <ForgotPasswordScreen onSendReset={store.actions.handleForgotPassword} onBackToLogin={() => window.location.href = '/'} />;
+    }
+
+    if (currentRoute === '/redefinir-senha') {
+      return <ResetPasswordScreen onResetComplete={() => window.location.href = '/'} />;
+    }
+
+    if (currentRoute === '/confirmar-email') {
+      return <ConfirmEmailScreen onConfirmComplete={() => window.location.href = '/dashboard'} onBackToLogin={() => window.location.href = '/'} />;
+    }
+
     return <LoginScreen onLogin={store.actions.handleLogin} onRequirePasswordChange={store.actions.handleRequirePasswordChange} onForgotPassword={store.actions.handleForgotPassword} />;
   }
 
