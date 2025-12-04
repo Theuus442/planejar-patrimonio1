@@ -76,25 +76,37 @@ export const usersDB = {
   },
 
   async createUser(user: Partial<User> & { id: string }): Promise<User | null> {
-    const { data, error } = await getSupabase()
-      .from('users')
-      .insert([{
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatar_url: user.avatarUrl,
-        client_type: user.clientType,
-      }])
-      .select()
-      .single();
+    try {
+      const { data, error } = await getSupabase()
+        .from('users')
+        .insert([{
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          avatar_url: user.avatarUrl,
+          client_type: user.clientType,
+        }])
+        .select()
+        .single();
 
-    if (error) {
-      console.error('Error creating user:', error);
-      throw new Error(error.message || 'Erro ao criar usuário no banco de dados');
+      if (error) {
+        console.error('Error creating user in database:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+        });
+        throw new Error(error.message || 'Erro ao criar usuário no banco de dados');
+      }
+
+      return mapDatabaseUserToAppUser(data);
+    } catch (err: any) {
+      // Re-throw with proper error handling
+      if (err instanceof Error) {
+        throw err;
+      }
+      throw new Error(err?.message || 'Erro desconhecido ao criar usuário');
     }
-
-    return mapDatabaseUserToAppUser(data);
   },
 
   async updateUser(userId: string, updates: Partial<User>): Promise<User | null> {
