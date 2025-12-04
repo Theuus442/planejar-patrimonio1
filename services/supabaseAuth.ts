@@ -258,7 +258,10 @@ export const supabaseAuthService = {
       const { data, error } = await getSupabaseAuth().auth.getUser();
 
       if (error) {
-        console.error('Get user error:', error);
+        // "Auth session missing" is normal when user is not logged in - don't log this error
+        if (!error.message?.includes('Auth session missing')) {
+          console.error('Get user error:', error);
+        }
         return null;
       }
 
@@ -269,7 +272,10 @@ export const supabaseAuthService = {
       // Fetch full user from database
       return await usersDB.getUser(data.user.id);
     } catch (error) {
-      console.error('Get current user failed:', error);
+      // Suppress "Auth session missing" errors - this is expected when not logged in
+      if (error instanceof Error && !error.message?.includes('Auth session missing')) {
+        console.error('Get current user failed:', error);
+      }
       return null;
     }
   },
