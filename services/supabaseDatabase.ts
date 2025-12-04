@@ -1126,7 +1126,7 @@ async function mapDatabaseProjectToAppProject(dbProject: any): Promise<Project> 
   const internalChat = await chatDB.getMessages(dbProject.id, 'internal');
   const clientChat = await chatDB.getMessages(dbProject.id, 'client');
   const activityLog = await activityLogsDB.getActivityLog(dbProject.id);
-  
+
   return {
     id: dbProject.id,
     name: dbProject.name,
@@ -1142,3 +1142,61 @@ async function mapDatabaseProjectToAppProject(dbProject: any): Promise<Project> 
     activityLog,
   };
 }
+
+// ============================================================================
+// FILE UPLOADS
+// ============================================================================
+export const filesDB = {
+  async uploadProjectContract(projectId: string, file: File): Promise<string | null> {
+    try {
+      if (!file.type.includes('pdf')) {
+        throw new Error('Apenas arquivos PDF são permitidos');
+      }
+
+      const fileName = `${projectId}/${Date.now()}-${file.name}`;
+
+      const { data, error } = await getSupabase()
+        .storage
+        .from('project_contracts')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('Error uploading contract:', error);
+        throw new Error(error.message || 'Erro ao fazer upload do contrato');
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = getSupabase()
+        .storage
+        .from('project_contracts')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      throw err;
+    }
+  },
+
+  async deleteProjectContract(filePath: string): Promise<boolean> {
+    try {
+      const { error } = await getSupabase()
+        .storage
+        .from('project_contracts')
+        .remove([filePath]);
+
+      if (error) {
+        console.error('Error deleting contract:', error);
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.error('Delete error:', err);
+      return false;
+    }
+  },
+};

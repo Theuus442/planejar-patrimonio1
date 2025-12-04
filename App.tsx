@@ -409,6 +409,17 @@ const useStore = () => {
                 } as any);
 
                 if (project) {
+                    // Upload contract file
+                    if (contractFile) {
+                        try {
+                            const { filesDB } = await import('./services/supabaseDatabase');
+                            const contractUrl = await filesDB.uploadProjectContract(project.id, contractFile);
+                            console.log('Contract uploaded:', contractUrl);
+                        } catch (uploadError) {
+                            console.error('Error uploading contract:', uploadError);
+                        }
+                    }
+
                     for (const clientId of createdUserIds) {
                         await projectClientsDB.addClientToProject(project.id, clientId);
                     }
@@ -416,7 +427,10 @@ const useStore = () => {
                     await activityLogsDB.addLogEntry(project.id, currentUser.id, 'criou o projeto.');
 
                     await reloadProjects();
-                    setCurrentView('dashboard');
+
+                    // Navigate to project detail view
+                    setSelectedProjectId(project.id);
+                    setCurrentView('project_detail');
                 }
             } catch (error) {
                 console.error('Error creating client and project:', error);
