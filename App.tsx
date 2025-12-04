@@ -66,13 +66,25 @@ const useStore = () => {
             try {
                 setIsLoading(true);
 
-                // Try to restore current session
-                const user = await supabaseAuthService.getCurrentUser();
-                if (user) {
-                    setCurrentUser(user);
-                    // Load data for authenticated user
-                    await loadUserData(user.id);
-                } else {
+                try {
+                    // Try to restore current session
+                    const user = await supabaseAuthService.getCurrentUser();
+                    if (user) {
+                        setCurrentUser(user);
+                        // Load data for authenticated user
+                        try {
+                            await loadUserData(user.id);
+                        } catch (dataError) {
+                            console.error('Error loading user data:', dataError);
+                            // Continue anyway - app should still load
+                        }
+                    } else {
+                        setCurrentUser(null);
+                        setAllUsers([]);
+                        setProjects([]);
+                    }
+                } catch (authError) {
+                    console.error('Error getting current user:', authError);
                     setCurrentUser(null);
                     setAllUsers([]);
                     setProjects([]);
@@ -94,7 +106,11 @@ const useStore = () => {
                     const user = await supabaseAuthService.getCurrentUser();
                     if (user) {
                         setCurrentUser(user);
-                        await loadUserData(user.id);
+                        try {
+                            await loadUserData(user.id);
+                        } catch (dataError) {
+                            console.error('Error loading user data after sign in:', dataError);
+                        }
                     }
                 } else if (event === 'SIGNED_OUT') {
                     setCurrentUser(null);
