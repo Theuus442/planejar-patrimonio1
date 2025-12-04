@@ -51,6 +51,7 @@ const useStore = () => {
     const [aiChatSession, setAiChatSession] = useState<ReturnType<typeof createAIChatSession> | null>(null);
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isRecoveryMode, setIsRecoveryMode] = useState(false);
 
     // ========================================================================
     // INITIALIZATION
