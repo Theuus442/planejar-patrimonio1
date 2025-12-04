@@ -541,7 +541,19 @@ const useStore = () => {
 // ============================================================================
 
 const App = () => {
-  const store = useStore();
+  const [renderError, setRenderError] = useState<string | null>(null);
+  let store: ReturnType<typeof useStore> | null = null;
+
+  try {
+    store = useStore();
+  } catch (err) {
+    console.error('Error initializing store:', err);
+    setRenderError(String(err));
+  }
+
+  if (renderError || !store) {
+    return <div style={{padding: '20px', color: 'red'}}>Error initializing app: {renderError}</div>;
+  }
 
   useEffect(() => {
     if (store.currentUser && !store.aiChatSession) {
