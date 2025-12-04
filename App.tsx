@@ -626,8 +626,8 @@ const App = () => {
         case 'create_user':
             return <CreateUserScreen
                         onBack={() => store.actions.handleNavigate('manage_users')}
-                        onCreateUser={() => {
-                            loadUserData(store.currentUser.id);
+                        onCreateUser={async () => {
+                            await loadUserData(store.currentUser.id);
                         }}
                     />;
         case 'my_tasks':
