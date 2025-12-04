@@ -541,7 +541,12 @@ const useStore = () => {
         currentView, selectedProject, notifications, activeChat, targetPhaseId, isAiChatOpen,
         aiChatMessages, isAiLoading, availableClients, isSidebarOpen,
         aiChatSession,
-        actions, setCurrentUser, setUserForPasswordChange, setCurrentView,
+        actions: {
+            ...actions,
+            handleUploadDocument: actions.handleUploadDocument,
+            handleUploadAndLinkDocument: actions.handleUploadAndLinkDocument,
+        },
+        setCurrentUser, setUserForPasswordChange, setCurrentView,
         setSelectedProjectId, setNotifications, setActiveChat, setTargetPhaseId,
         setIsAiChatOpen, setAiChatMessages, setAiChatSession, setIsAiLoading,
         isPartnerDataComplete, setProjects, setAllUsers, setIsSidebarOpen, reloadProjects
