@@ -562,8 +562,19 @@ const App = () => {
 
   useEffect(() => {
     // Detect current route from URL pathname
-    const pathname = window.location.pathname;
-    setCurrentRoute(pathname);
+    const updateRoute = () => {
+      const pathname = window.location.pathname;
+      setCurrentRoute(pathname);
+    };
+
+    updateRoute();
+
+    // Listen for URL changes (browser back/forward)
+    window.addEventListener('popstate', updateRoute);
+
+    return () => {
+      window.removeEventListener('popstate', updateRoute);
+    };
   }, []);
 
   useEffect(() => {
