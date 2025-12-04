@@ -349,7 +349,7 @@ export const supabaseAuthService = {
     ) => void
   ): (() => void) | null {
     try {
-      const unsubscribe = supabase.auth.onAuthStateChange(
+      const unsubscribe = getSupabaseAuth().auth.onAuthStateChange(
         async (event, session) => {
           callback(
             event as 'SIGNED_IN' | 'SIGNED_OUT' | 'TOKEN_REFRESHED' | 'USER_UPDATED',
