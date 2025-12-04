@@ -1127,6 +1127,31 @@ async function mapDatabaseProjectToAppProject(dbProject: any): Promise<Project> 
   const clientChat = await chatDB.getMessages(dbProject.id, 'client');
   const activityLog = await activityLogsDB.getActivityLog(dbProject.id);
 
+  // Import getInitialProjectPhases to initialize phases for new projects
+  const { getInitialProjectPhases } = await import('../constants');
+  const initialPhases = getInitialProjectPhases();
+
+  // Fetch phase-specific data from database
+  const phase1Data = await phaseDataDB.getPhase1Data(dbProject.id);
+  const phase2Data = await phaseDataDB.getPhase2Data(dbProject.id);
+  const phase3Data = await phaseDataDB.getPhase3Data(dbProject.id);
+
+  // Fetch all documents for this project
+  const allDocuments = await documentsDB.listProjectDocuments(dbProject.id);
+
+  // Update phases with actual data from database
+  const phases = initialPhases.map(phase => {
+    const phaseDocuments = allDocuments.filter(doc => doc.phaseId === phase.id);
+
+    return {
+      ...phase,
+      documents: phaseDocuments,
+      phase1Data: phase.id === 1 ? phase1Data || phase.phase1Data : undefined,
+      phase2Data: phase.id === 2 ? phase2Data || phase.phase2Data : undefined,
+      phase3Data: phase.id === 3 ? phase3Data || phase.phase3Data : undefined,
+    };
+  });
+
   return {
     id: dbProject.id,
     name: dbProject.name,
@@ -1135,7 +1160,7 @@ async function mapDatabaseProjectToAppProject(dbProject: any): Promise<Project> 
     consultantId: dbProject.consultant_id,
     auxiliaryId: dbProject.auxiliary_id,
     clientIds: clients.map(c => c.id),
-    phases: [],
+    phases,
     internalChat,
     clientChat,
     postCompletionStatus: dbProject.post_completion_status,
