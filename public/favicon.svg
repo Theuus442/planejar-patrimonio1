@@ -1,15 +1,41 @@
 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background -->
-  <rect width="64" height="64" fill="#194f56" rx="8"/>
+  <!-- Background with gradient effect -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#194f56;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#003b3f;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f2b401;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d99a00;stop-opacity:1" />
+    </linearGradient>
+  </defs>
   
-  <!-- Logo icon - simplified version of the main logo -->
-  <g transform="translate(10, 12)">
-    <!-- Outer box -->
-    <rect x="2" y="2" width="20" height="24" fill="none" stroke="white" stroke-width="1.5" rx="1"/>
+  <!-- Main background -->
+  <rect width="64" height="64" fill="url(#bgGradient)" rx="10"/>
+  
+  <!-- Decorative corner accent -->
+  <circle cx="56" cy="8" r="3" fill="url(#accentGradient)" opacity="0.8"/>
+  
+  <!-- Shield/House shape representing heritage/patrimony -->
+  <g transform="translate(32, 32)">
+    <!-- Main shield shape -->
+    <path d="M -10 -8 L -10 0 Q -10 8 0 12 Q 10 8 10 0 L 10 -8 L 0 -12 Z" 
+          fill="none" stroke="url(#accentGradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     
-    <!-- Horizontal lines -->
-    <line x1="2" y1="8" x2="22" y2="8" stroke="white" stroke-width="1"/>
-    <line x1="7" y1="16" x2="17" y2="16" stroke="white" stroke-width="1"/>
-    <line x1="2" y1="22" x2="22" y2="22" stroke="white" stroke-width="1"/>
+    <!-- Inner decorative lines -->
+    <line x1="-6" y1="-2" x2="6" y2="-2" stroke="url(#accentGradient)" stroke-width="1" opacity="0.7"/>
+    <line x1="-6" y1="2" x2="6" y2="2" stroke="url(#accentGradient)" stroke-width="1" opacity="0.7"/>
+    <line x1="-6" y1="6" x2="6" y2="6" stroke="url(#accentGradient)" stroke-width="1" opacity="0.7"/>
+    
+    <!-- Center vertical accent line -->
+    <line x1="0" y1="-12" x2="0" y2="12" stroke="url(#accentGradient)" stroke-width="0.8" opacity="0.5"/>
   </g>
+  
+  <!-- Subtle pattern elements -->
+  <circle cx="12" cy="52" r="1.5" fill="url(#accentGradient)" opacity="0.4"/>
+  <circle cx="52" cy="52" r="1.5" fill="url(#accentGradient)" opacity="0.4"/>
+  
+  <!-- Border highlight -->
+  <rect width="64" height="64" fill="none" stroke="url(#accentGradient)" stroke-width="0.5" rx="10" opacity="0.3"/>
 </svg>
