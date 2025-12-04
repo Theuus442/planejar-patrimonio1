@@ -1,0 +1,15 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="64" height="64" fill="#194f56" rx="8"/>
+  
+  <!-- Logo icon - simplified version of the main logo -->
+  <g transform="translate(10, 12)">
+    <!-- Outer box -->
+    <rect x="2" y="2" width="20" height="24" fill="none" stroke="white" stroke-width="1.5" rx="1"/>
+    
+    <!-- Horizontal lines -->
+    <line x1="2" y1="8" x2="22" y2="8" stroke="white" stroke-width="1"/>
+    <line x1="7" y1="16" x2="17" y2="16" stroke="white" stroke-width="1"/>
+    <line x1="2" y1="22" x2="22" y2="22" stroke="white" stroke-width="1"/>
+  </g>
+</svg>
