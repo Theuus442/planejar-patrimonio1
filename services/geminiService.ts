@@ -139,7 +139,7 @@ export const analyzeDocumentWithAI = async (file: File): Promise<AIAnalysisResul
           1.  Faça um resumo conciso do propósito principal do documento.
           2.  Extraia informações chave, como nomes de pessoas, empresas, endereços de imóveis, valores monetários e cláusulas importantes.
           3.  Sugira de 3 a 5 tarefas ou próximos passos acionáveis para um consultor com base no conteúdo. As tarefas devem ser curtas e diretas.
-          
+
           Retorne a resposta EXCLUSIVAMENTE em formato JSON.
         `,
     };
@@ -172,12 +172,12 @@ export const analyzeDocumentWithAI = async (file: File): Promise<AIAnalysisResul
                 },
             }
         });
-        
+
         const jsonText = response.text.trim();
         return JSON.parse(jsonText) as AIAnalysisResult;
 
     } catch (error) {
-        console.error("Error analyzing document with Gemini:", error);
-        throw new Error("Não foi possível analisar o documento. Verifique o arquivo ou tente novamente.");
+        console.warn("Document analysis not available:", error instanceof Error ? error.message : String(error));
+        throw new Error("Análise de documentos via IA não está disponível. Configure a chave da API do Google Gemini.");
     }
 };
