@@ -118,7 +118,7 @@ export const usersDB = {
   },
 
   async deleteUser(userId: string): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('users')
       .delete()
       .eq('id', userId);
@@ -131,7 +131,7 @@ export const usersDB = {
   },
 
   async updateQualificationData(userId: string, qualificationData: any): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('partner_qualification_data')
       .upsert([{
         user_id: userId,
@@ -175,7 +175,7 @@ export const usersDB = {
 // ============================================================================
 export const userDocumentsDB = {
   async uploadUserDocument(userId: string, document: any): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('user_documents')
       .insert([{
         user_id: userId,
@@ -207,7 +207,7 @@ export const userDocumentsDB = {
   },
 
   async deleteUserDocument(documentId: string): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('user_documents')
       .delete()
       .eq('id', documentId);
@@ -341,7 +341,7 @@ export const projectsDB = {
   },
 
   async deleteProject(projectId: string): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('projects')
       .delete()
       .eq('id', projectId);
@@ -359,7 +359,7 @@ export const projectsDB = {
 // ============================================================================
 export const projectClientsDB = {
   async addClientToProject(projectId: string, clientId: string): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('project_clients')
       .insert([{
         project_id: projectId,
@@ -374,7 +374,7 @@ export const projectClientsDB = {
   },
 
   async removeClientFromProject(projectId: string, clientId: string): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('project_clients')
       .delete()
       .eq('project_id', projectId)
@@ -483,7 +483,7 @@ export const documentsDB = {
   },
 
   async deleteDocument(documentId: string): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('documents')
       .update({ status: 'deprecated' })
       .eq('id', documentId);
@@ -573,7 +573,7 @@ export const tasksDB = {
   },
 
   async deleteTask(taskId: string): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('tasks')
       .delete()
       .eq('id', taskId);
@@ -643,7 +643,7 @@ export const activityLogsDB = {
     const actor = await usersDB.getUser(actorId);
     const actorName = actor?.name || 'Unknown';
     
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('activity_logs')
       .insert([{
         project_id: projectId,
@@ -705,7 +705,7 @@ export const phaseDataDB = {
   },
 
   async updatePhase1Data(projectId: string, phaseData: Partial<Phase1Data>): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('phase_1_data')
       .upsert([{
         project_id: projectId,
@@ -770,7 +770,7 @@ export const phaseDataDB = {
     
     if (!phase2Id) return false;
     
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('phase_2_data')
       .update({
         company_name: phaseData.companyData?.name,
@@ -811,7 +811,7 @@ export const phaseDataDB = {
   },
 
   async updatePhase3Data(projectId: string, phaseData: Partial<Phase3Data>): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('phase_3_data')
       .upsert([{
         project_id: projectId,
@@ -898,7 +898,7 @@ export const assetsDB = {
   },
 
   async deleteAsset(assetId: string): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('assets')
       .delete()
       .eq('id', assetId);
@@ -939,7 +939,7 @@ export const assetsDB = {
 // ============================================================================
 export const notificationsDB = {
   async createNotification(notification: any): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('notifications')
       .insert([{
         recipient_id: notification.recipientId,
@@ -973,7 +973,7 @@ export const notificationsDB = {
   },
 
   async markNotificationAsRead(notificationId: string): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('notifications')
       .update({ is_read: true })
       .eq('id', notificationId);
