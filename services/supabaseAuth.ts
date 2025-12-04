@@ -130,18 +130,12 @@ export const supabaseAuthService = {
         }
       }
 
-      // Return success even if database user creation failed
-      // The user exists in Auth and can login
-      const fallbackUser: User = {
-        id: authData.user.id,
-        name,
-        email,
-        role,
-        clientType,
-      };
+      if (!user) {
+        throw new Error('Failed to create database user record');
+      }
 
       return {
-        user: user || fallbackUser,
+        user,
         session: {
           user: {
             id: authData.user.id,

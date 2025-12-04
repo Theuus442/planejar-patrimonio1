@@ -380,9 +380,14 @@ const useStore = () => {
                 const createdUserIds: string[] = [];
 
                 for (const clientData of allNewClientsData) {
+                    if (!clientData.password) {
+                        console.error('Password required for client:', clientData.email);
+                        continue;
+                    }
+
                     const result = await supabaseAuthService.signUpWithEmail(
                         clientData.email,
-                        clientData.password || 'TempPassword123!',
+                        clientData.password,
                         clientData.name,
                         UserRole.CLIENT,
                         clientData.clientType
