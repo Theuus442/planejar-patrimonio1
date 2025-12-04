@@ -82,7 +82,7 @@ export const getAIHelp = async (question: string): Promise<ChatMessage> => {
     });
 
     const text = response.text;
-    
+
     return {
       id: Date.now().toString(),
       authorId: 'ai',
@@ -93,14 +93,14 @@ export const getAIHelp = async (question: string): Promise<ChatMessage> => {
       timestamp: new Date().toISOString(),
     };
   } catch (error) {
-    console.error("Error calling Gemini API:", error);
+    console.warn("AI help not available:", error instanceof Error ? error.message : String(error));
     return {
       id: Date.now().toString(),
       authorId: 'ai',
       authorName: 'Assistente IA',
       authorAvatarUrl: '',
       authorRole: UserRole.CONSULTANT,
-      content: "Ocorreu um erro ao processar sua pergunta. Tente novamente mais tarde.",
+      content: "Assistente de IA não está disponível no momento. Configure a chave da API do Google Gemini.",
       timestamp: new Date().toISOString(),
     };
   }
