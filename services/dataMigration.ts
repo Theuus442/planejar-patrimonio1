@@ -52,14 +52,14 @@ export const dataMigrationService = {
         },
         {
           email: 'joao.completo@email.com',
-          password: '123',
+          password: 'senha123',
           name: 'João da Silva Completo',
           role: UserRole.CLIENT,
           clientType: 'partner',
         },
         {
           email: 'maria.completo@email.com',
-          password: '123',
+          password: 'senha123',
           name: 'Maria Souza Completo',
           role: UserRole.CLIENT,
           clientType: 'partner',
@@ -283,8 +283,8 @@ export const dataMigrationService = {
       details.push('Test Credentials:');
       details.push('- Admin: admin@planejar.com / admin123');
       details.push('- Consultant: diego.garcia@grupociatos.com.br / 250500');
-      details.push('- Client 1: joao.completo@email.com / 123');
-      details.push('- Client 2: maria.completo@email.com / 123');
+      details.push('- Client 1: joao.completo@email.com / senha123');
+      details.push('- Client 2: maria.completo@email.com / senha123');
       details.push('- Auxiliary: servicos@grupociatos.com.br / 123456');
 
       return {
