@@ -1128,8 +1128,7 @@ async function mapDatabaseProjectToAppProject(dbProject: any): Promise<Project> 
   const clientChat = await chatDB.getMessages(dbProject.id, 'client');
   const activityLog = await activityLogsDB.getActivityLog(dbProject.id);
 
-  // Import getInitialProjectPhases to initialize phases for new projects
-  const { getInitialProjectPhases } = await import('../constants');
+  // Initialize phases with template
   const initialPhases = getInitialProjectPhases();
 
   // Fetch phase-specific data from database
