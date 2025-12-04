@@ -574,10 +574,10 @@ const App = () => {
   }, [store.currentUser]);
 
   if (store.isLoading) {
-    return <div className="flex items-center justify-center h-screen bg-gray-100">
-      <div className="text-center">
-        <p className="text-xl text-gray-700 mb-4">Carregando...</p>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary mx-auto"></div>
+    return <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#f3f4f6'}}>
+      <div style={{textAlign: 'center'}}>
+        <p style={{fontSize: '1.25rem', color: '#374151', marginBottom: '1rem'}}>Carregando...</p>
+        <div style={{animation: 'spin 1s linear infinite', borderRadius: '50%', height: '3rem', width: '3rem', borderTop: '2px solid #004c59', margin: '0 auto'}}></div>
       </div>
     </div>;
   }
