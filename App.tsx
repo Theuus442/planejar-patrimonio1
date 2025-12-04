@@ -91,7 +91,12 @@ const useStore = () => {
 
         const unsubscribe = supabaseAuthService.onAuthStateChange(
             async (event, session) => {
-                if (event === 'SIGNED_IN' && session) {
+                console.log('Auth event:', event);
+
+                if (event === 'PASSWORD_RECOVERY') {
+                    console.log('Modo de recuperação de senha ativado');
+                    setIsRecoveryMode(true);
+                } else if (event === 'SIGNED_IN' && session) {
                     const user = await supabaseAuthService.getCurrentUser();
                     if (user) {
                         setCurrentUser(user);
@@ -106,6 +111,7 @@ const useStore = () => {
                     setAllUsers([]);
                     setProjects([]);
                     setCurrentView('dashboard');
+                    setIsRecoveryMode(false);
                 }
             }
         );
