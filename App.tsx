@@ -3,7 +3,7 @@ import { User, Project, UserRole, Notification, Task, ChatMessage, NewClientData
 
 // Supabase Services
 import supabaseAuthService from './services/supabaseAuth';
-import { usersDB, projectsDB, projectClientsDB, tasksDB, chatDB, activityLogsDB } from './services/supabaseDatabase';
+import { usersDB, projectsDB, projectClientsDB, tasksDB, chatDB, activityLogsDB, documentsDB } from './services/supabaseDatabase';
 import dataMigrationService from './services/dataMigration';
 
 // Component Imports
