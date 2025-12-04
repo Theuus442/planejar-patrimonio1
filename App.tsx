@@ -133,23 +133,39 @@ const useStore = () => {
     const loadUserData = useCallback(async (userId: string) => {
         try {
             // Load all users (for consultants/admins)
-            const users = await usersDB.listUsers();
-            setAllUsers(users);
+            try {
+                const users = await usersDB.listUsers();
+                setAllUsers(users);
 
-            // Load projects based on role
-            const user = users.find(u => u.id === userId);
-            if (!user) return;
+                // Load projects based on role
+                const user = users.find(u => u.id === userId);
+                if (!user) {
+                    setProjects([]);
+                    return;
+                }
 
-            let userProjects: Project[] = [];
-            if (user.role === UserRole.CLIENT) {
-                userProjects = await projectsDB.listProjectsByClient(userId);
-            } else {
-                userProjects = await projectsDB.listProjects();
+                let userProjects: Project[] = [];
+                try {
+                    if (user.role === UserRole.CLIENT) {
+                        userProjects = await projectsDB.listProjectsByClient(userId);
+                    } else {
+                        userProjects = await projectsDB.listProjects();
+                    }
+                } catch (projectError) {
+                    console.error('Error loading projects:', projectError);
+                    userProjects = [];
+                }
+
+                setProjects(userProjects);
+            } catch (usersError) {
+                console.error('Error loading users:', usersError);
+                setAllUsers([]);
+                setProjects([]);
             }
-
-            setProjects(userProjects);
         } catch (error) {
             console.error('Error loading user data:', error);
+            setAllUsers([]);
+            setProjects([]);
         }
     }, []);
 
