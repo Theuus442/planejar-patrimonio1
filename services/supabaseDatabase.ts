@@ -88,12 +88,12 @@ export const usersDB = {
       }])
       .select()
       .single();
-    
+
     if (error) {
       console.error('Error creating user:', error);
-      return null;
+      throw new Error(error.message || 'Erro ao criar usuário no banco de dados');
     }
-    
+
     return mapDatabaseUserToAppUser(data);
   },
 
