@@ -67,12 +67,14 @@ const useStore = () => {
                             console.log('✅ Database initialized successfully');
                             result.details.forEach(detail => console.log(detail));
                         } else {
-                            console.error('❌ Database initialization failed:', result.message);
-                            result.details.forEach(detail => console.error(detail));
+                            console.warn('⚠️  Database initialization incomplete:', result.message);
+                            result.details.forEach(detail => console.warn(detail));
+                            console.warn('Note: Some test users may not have been created. You can retry initialization later.');
                         }
                     }
                 } catch (dbError) {
                     console.error('Error during database initialization:', dbError);
+                    console.warn('⚠️  Initialization error - app will continue loading. Check browser console for details.');
                 }
 
                 const user = await supabaseAuthService.getCurrentUser();
