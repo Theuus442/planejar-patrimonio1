@@ -7,8 +7,17 @@ const getSupabaseClient = (): SupabaseClient => {
     const url = import.meta.env.VITE_SUPABASE_URL;
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+    console.debug('Supabase configuration check:', {
+      url: url ? `${url.substring(0, 20)}...` : 'NOT SET',
+      anonKey: anonKey ? `${anonKey.substring(0, 20)}...` : 'NOT SET',
+    });
+
     if (!url || !anonKey) {
-      throw new Error('Missing Supabase configuration. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+      const errorMsg = `Missing Supabase configuration:
+        - VITE_SUPABASE_URL: ${url ? 'SET' : 'MISSING'}
+        - VITE_SUPABASE_ANON_KEY: ${anonKey ? 'SET' : 'MISSING'}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
     supabaseClient = createClient(url, anonKey);
