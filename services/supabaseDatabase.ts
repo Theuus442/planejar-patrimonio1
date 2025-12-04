@@ -1147,17 +1147,47 @@ async function mapDatabaseProjectToAppProject(dbProject: any): Promise<Project> 
 // FILE UPLOADS
 // ============================================================================
 export const filesDB = {
+  async uploadProjectDocument(projectId: string, phaseId: number, file: File): Promise<string | null> {
+    try {
+      const fileName = `projects/${projectId}/phase${phaseId}/${Date.now()}-${file.name}`;
+
+      const { data, error } = await getSupabase()
+        .storage
+        .from('project-files')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('Error uploading document:', error);
+        throw new Error(error.message || 'Erro ao fazer upload do documento');
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = getSupabase()
+        .storage
+        .from('project-files')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      throw err;
+    }
+  },
+
   async uploadProjectContract(projectId: string, file: File): Promise<string | null> {
     try {
       if (!file.type.includes('pdf')) {
         throw new Error('Apenas arquivos PDF são permitidos');
       }
 
-      const fileName = `${projectId}/${Date.now()}-${file.name}`;
+      const fileName = `contracts/${projectId}/${Date.now()}-${file.name}`;
 
       const { data, error } = await getSupabase()
         .storage
-        .from('project_contracts')
+        .from('project-files')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
@@ -1171,7 +1201,7 @@ export const filesDB = {
       // Get public URL
       const { data: { publicUrl } } = getSupabase()
         .storage
-        .from('project_contracts')
+        .from('project-files')
         .getPublicUrl(fileName);
 
       return publicUrl;
@@ -1181,11 +1211,30 @@ export const filesDB = {
     }
   },
 
+  async deleteProjectDocument(filePath: string): Promise<boolean> {
+    try {
+      const { error } = await getSupabase()
+        .storage
+        .from('project-files')
+        .remove([filePath]);
+
+      if (error) {
+        console.error('Error deleting document:', error);
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.error('Delete error:', err);
+      return false;
+    }
+  },
+
   async deleteProjectContract(filePath: string): Promise<boolean> {
     try {
       const { error } = await getSupabase()
         .storage
-        .from('project_contracts')
+        .from('project-files')
         .remove([filePath]);
 
       if (error) {

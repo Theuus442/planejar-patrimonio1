@@ -3,7 +3,7 @@ import { User, Project, UserRole, Notification, Task, ChatMessage, NewClientData
 
 // Supabase Services
 import supabaseAuthService from './services/supabaseAuth';
-import { usersDB, projectsDB, projectClientsDB, tasksDB, chatDB, activityLogsDB } from './services/supabaseDatabase';
+import { usersDB, projectsDB, projectClientsDB, tasksDB, chatDB, activityLogsDB, documentsDB } from './services/supabaseDatabase';
 import dataMigrationService from './services/dataMigration';
 
 // Component Imports
@@ -377,6 +377,63 @@ const useStore = () => {
             }
         },
 
+        handleUploadDocument: async (projectId: string, phaseId: number, file: File, description: string) => {
+            if (!currentUser) return;
+
+            try {
+                const { filesDB } = await import('./services/supabaseDatabase');
+                const documentUrl = await filesDB.uploadProjectDocument(projectId, phaseId, file);
+
+                if (documentUrl) {
+                    const doc = await documentsDB.uploadDocument({
+                        projectId,
+                        phaseId,
+                        name: description || file.name,
+                        url: documentUrl,
+                        type: 'pdf',
+                        uploadedBy: currentUser.id,
+                    });
+
+                    if (doc) {
+                        console.log('Document uploaded successfully:', doc);
+                        await reloadProjects();
+                    }
+                }
+            } catch (error) {
+                console.error('Error uploading document:', error);
+                throw error;
+            }
+        },
+
+        handleUploadAndLinkDocument: async (projectId: string, phaseId: number, file: File, onSuccess?: (documentId: string) => void) => {
+            if (!currentUser) return;
+
+            try {
+                const { filesDB } = await import('./services/supabaseDatabase');
+                const documentUrl = await filesDB.uploadProjectDocument(projectId, phaseId, file);
+
+                if (documentUrl) {
+                    const doc = await documentsDB.uploadDocument({
+                        projectId,
+                        phaseId,
+                        name: file.name,
+                        url: documentUrl,
+                        type: 'pdf',
+                        uploadedBy: currentUser.id,
+                    });
+
+                    if (doc && onSuccess) {
+                        console.log('Document uploaded and linked:', doc);
+                        onSuccess(doc.id);
+                        await reloadProjects();
+                    }
+                }
+            } catch (error) {
+                console.error('Error uploading and linking document:', error);
+                throw error;
+            }
+        },
+
         handleCreateClient: async (projectName: string, mainClientData: NewClientData, additionalClientsData: NewClientData[], contractFile: File) => {
             if (!currentUser) return;
 
@@ -484,7 +541,8 @@ const useStore = () => {
         currentView, selectedProject, notifications, activeChat, targetPhaseId, isAiChatOpen,
         aiChatMessages, isAiLoading, availableClients, isSidebarOpen,
         aiChatSession,
-        actions, setCurrentUser, setUserForPasswordChange, setCurrentView,
+        actions,
+        setCurrentUser, setUserForPasswordChange, setCurrentView,
         setSelectedProjectId, setNotifications, setActiveChat, setTargetPhaseId,
         setIsAiChatOpen, setAiChatMessages, setAiChatSession, setIsAiLoading,
         isPartnerDataComplete, setProjects, setAllUsers, setIsSidebarOpen, reloadProjects
@@ -573,9 +631,9 @@ const App = () => {
             }
             return <div>Dashboard não implementado para esta função.</div>;
         case 'project_detail':
-            return store.selectedProject ? 
-                <ProjectDetailView 
-                    project={store.selectedProject} 
+            return store.selectedProject ?
+                <ProjectDetailView
+                    project={store.selectedProject}
                     currentUser={store.currentUser!}
                     users={store.allUsers}
                     onBack={store.actions.handleBackToDashboard}
@@ -585,7 +643,7 @@ const App = () => {
                     onAdvancePhase={store.actions.handleAdvancePhase}
                     onUpdatePhaseChat={store.actions.handleUpdatePhaseChat}
                     initialPhaseId={store.targetPhaseId}
-                    onUploadAndLinkDocument={() => {}}
+                    onUploadAndLinkDocument={store.actions.handleUploadAndLinkDocument}
                     onChoosePostCompletionPath={() => {}}
                     onRemoveMemberFromProject={() => {}}
                     onUpdateUser={store.actions.handleUpdateUser}
@@ -653,11 +711,11 @@ const App = () => {
                    />;
         case 'documents':
             if (store.currentUser.role === UserRole.CLIENT) {
-                return store.selectedProject ? <DocumentsView project={store.selectedProject} users={store.allUsers} onUploadDocument={() => {}} /> : <div>Selecione um projeto</div>
+                return store.selectedProject ? <DocumentsView project={store.selectedProject} users={store.allUsers} onUploadDocument={store.actions.handleUploadDocument} /> : <div>Selecione um projeto</div>
             }
             return <ProjectsDocumentsView projects={store.projects} onProjectClick={store.actions.handleSelectProjectForDocuments} />;
          case 'project_documents':
-            return store.selectedProject ? <DocumentsView project={store.selectedProject} users={store.allUsers} onUploadDocument={() => {}} onBack={() => store.actions.handleNavigate('documents')} /> : <div>Projeto não encontrado.</div>;
+            return store.selectedProject ? <DocumentsView project={store.selectedProject} users={store.allUsers} onUploadDocument={store.actions.handleUploadDocument} onBack={() => store.actions.handleNavigate('documents')} /> : <div>Projeto não encontrado.</div>;
         case 'support':
             return <SupportDashboard projects={store.projects} users={store.allUsers} currentUser={store.currentUser} onUpdateProject={store.actions.handleUpdateProject} />;
         default:
