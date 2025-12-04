@@ -1147,6 +1147,36 @@ async function mapDatabaseProjectToAppProject(dbProject: any): Promise<Project> 
 // FILE UPLOADS
 // ============================================================================
 export const filesDB = {
+  async uploadProjectDocument(projectId: string, phaseId: number, file: File): Promise<string | null> {
+    try {
+      const fileName = `projects/${projectId}/phase${phaseId}/${Date.now()}-${file.name}`;
+
+      const { data, error } = await getSupabase()
+        .storage
+        .from('project_documents')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('Error uploading document:', error);
+        throw new Error(error.message || 'Erro ao fazer upload do documento');
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = getSupabase()
+        .storage
+        .from('project_documents')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      throw err;
+    }
+  },
+
   async uploadProjectContract(projectId: string, file: File): Promise<string | null> {
     try {
       if (!file.type.includes('pdf')) {
@@ -1178,6 +1208,25 @@ export const filesDB = {
     } catch (err: any) {
       console.error('Upload error:', err);
       throw err;
+    }
+  },
+
+  async deleteProjectDocument(filePath: string): Promise<boolean> {
+    try {
+      const { error } = await getSupabase()
+        .storage
+        .from('project_documents')
+        .remove([filePath]);
+
+      if (error) {
+        console.error('Error deleting document:', error);
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.error('Delete error:', err);
+      return false;
     }
   },
 
