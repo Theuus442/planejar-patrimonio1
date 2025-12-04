@@ -1,10 +1,10 @@
 import { getSupabaseClient } from './supabaseService';
-import { 
-  User, 
-  Project, 
-  Task, 
-  Document, 
-  ChatMessage, 
+import {
+  User,
+  Project,
+  Task,
+  Document,
+  ChatMessage,
   LogEntry,
   Asset,
   Phase1Data,
@@ -19,7 +19,14 @@ import {
   Phase10SupportData,
 } from '../types';
 
-const supabase = getSupabaseClient();
+let supabase: any = null;
+
+const getSupabase = () => {
+  if (!supabase) {
+    supabase = getSupabaseClient();
+  }
+  return supabase;
+};
 
 // ============================================================================
 // USERS
