@@ -543,7 +543,10 @@ const useStore = () => {
 const App = () => {
   const store = useStore();
 
+  console.log('App rendering, store initialized:', !!store, 'isLoading:', store?.isLoading);
+
   useEffect(() => {
+    console.log('useStore effect running');
     if (store.currentUser && !store.aiChatSession) {
       try {
         store.setAiChatSession(createAIChatSession());
