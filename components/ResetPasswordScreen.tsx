@@ -72,7 +72,9 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onResetComple
       const result = await supabaseAuthService.updatePassword(password);
       if (result) {
         setSuccess(true);
-        setTimeout(() => {
+        setTimeout(async () => {
+          // Make sure to sign out after password reset before redirecting
+          await supabaseAuthService.signOut();
           onResetComplete();
         }, 2000);
       } else {
