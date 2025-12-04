@@ -549,12 +549,12 @@ const useStore = () => {
     return {
         allUsers, projects, currentUser, isLoading, userForPasswordChange,
         currentView, selectedProject, notifications, activeChat, targetPhaseId, isAiChatOpen,
-        aiChatMessages, isAiLoading, availableClients, isSidebarOpen,
+        aiChatMessages, isAiLoading, availableClients, isSidebarOpen, isRecoveryMode,
         aiChatSession,
         actions,
         setCurrentUser, setUserForPasswordChange, setCurrentView,
         setSelectedProjectId, setNotifications, setActiveChat, setTargetPhaseId,
-        setIsAiChatOpen, setAiChatMessages, setAiChatSession, setIsAiLoading,
+        setIsAiChatOpen, setAiChatMessages, setAiChatSession, setIsAiLoading, setIsRecoveryMode,
         isPartnerDataComplete, setProjects, setAllUsers, setIsSidebarOpen, reloadProjects
     };
 };
@@ -626,9 +626,9 @@ const App = () => {
   }
 
   // Handle password recovery mode - when user clicks the recovery link in email
-  if (isRecoveryMode && store.currentUser) {
+  if (store.isRecoveryMode && store.currentUser) {
     return <ResetPasswordScreen onResetComplete={() => {
-      setIsRecoveryMode(false);
+      store.setIsRecoveryMode(false);
       window.location.href = '/';
     }} />;
   }
