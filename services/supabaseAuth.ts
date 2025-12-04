@@ -50,32 +50,11 @@ export const supabaseAuthService = {
       // Step 1: Create Auth user with metadata
       let authData;
       let authError;
+      let retries = 3;
 
-      try {
-        const response = await getSupabaseAuth().auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              name,
-              role,
-              client_type: clientType,
-            },
-          },
-        });
-        authData = response.data;
-        authError = response.error;
-      } catch (sdkError: any) {
-        // Handle SDK-level errors (like "body stream already read")
-        // This can happen with network proxies or malformed responses
-        console.error('Supabase SDK error during sign up:', sdkError);
-
-        // Try to provide a helpful error message
-        if (sdkError.message?.includes('body stream already read')) {
-          console.warn('Supabase API connection issue - retrying...');
-          // Retry once
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          const retryResponse = await getSupabaseAuth().auth.signUp({
+      while (retries > 0) {
+        try {
+          const response = await getSupabaseAuth().auth.signUp({
             email,
             password,
             options: {
@@ -86,10 +65,30 @@ export const supabaseAuthService = {
               },
             },
           });
-          authData = retryResponse.data;
-          authError = retryResponse.error;
-        } else {
-          throw sdkError;
+          authData = response.data;
+          authError = response.error;
+
+          if (!authError || !authError.message?.includes('body stream already read')) {
+            // Success or non-retryable error
+            break;
+          }
+
+          retries--;
+          if (retries > 0) {
+            console.warn(`Supabase API connection issue - retrying (${retries} left)...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+          }
+        } catch (sdkError: any) {
+          // Handle SDK-level errors (like "body stream already read" or "Failed to fetch")
+          console.error('Supabase SDK error during sign up:', sdkError);
+
+          retries--;
+          if (retries > 0 && (sdkError.message?.includes('body stream already read') || sdkError.message?.includes('Failed to fetch'))) {
+            console.warn(`Network error - retrying (${retries} left)...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+          } else {
+            throw sdkError;
+          }
         }
       }
 
@@ -404,7 +403,7 @@ export const supabaseAuthService = {
     ) => void
   ): (() => void) | null {
     try {
-      const unsubscribe = getSupabaseAuth().auth.onAuthStateChange(
+      const { data: { subscription } } = getSupabaseAuth().auth.onAuthStateChange(
         async (event, session) => {
           callback(
             event as 'SIGNED_IN' | 'SIGNED_OUT' | 'TOKEN_REFRESHED' | 'USER_UPDATED',
@@ -423,7 +422,9 @@ export const supabaseAuthService = {
         }
       );
 
-      return unsubscribe?.subscription?.unsubscribe || unsubscribe;
+      return () => {
+        subscription?.unsubscribe();
+      };
     } catch (error) {
       console.error('Set up auth state listener failed:', error);
       return null;
