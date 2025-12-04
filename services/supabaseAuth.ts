@@ -159,45 +159,73 @@ export const supabaseAuthService = {
     email: string,
     password: string
   ): Promise<{ user: User; session: AuthSession } | null> {
-    try {
-      // Authenticate with Supabase Auth
-      const { data, error } = await getSupabaseAuth().auth.signInWithPassword({
-        email,
-        password,
-      });
+    let retries = 3;
+    let lastError: any = null;
 
-      if (error) {
-        console.error('Sign in error:', error);
-        throw new Error('AUTH_INVALID_CREDENTIALS');
-      }
+    while (retries > 0) {
+      try {
+        // Authenticate with Supabase Auth
+        const { data, error } = await getSupabaseAuth().auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      if (!data.session || !data.user) {
-        throw new Error('No session returned from sign in');
-      }
+        if (error) {
+          // Check if this is a retryable network error
+          if (error.message?.includes('body stream already read') || error.message?.includes('Failed to fetch')) {
+            retries--;
+            if (retries > 0) {
+              console.warn(`Sign in network error - retrying (${retries} left)...`);
+              await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+              continue;
+            }
+          }
+          console.error('Sign in error:', error);
+          throw new Error('AUTH_INVALID_CREDENTIALS');
+        }
 
-      // Fetch user from database with related data
-      const user = await usersDB.getUser(data.user.id);
+        if (!data.session || !data.user) {
+          throw new Error('No session returned from sign in');
+        }
 
-      if (!user) {
-        throw new Error('User not found in database');
-      }
+        // Fetch user from database with related data
+        const user = await usersDB.getUser(data.user.id);
 
-      return {
-        user,
-        session: {
-          user: {
-            id: data.user.id,
-            email: data.user.email!,
-            user_metadata: data.user.user_metadata,
+        if (!user) {
+          throw new Error('User not found in database');
+        }
+
+        return {
+          user,
+          session: {
+            user: {
+              id: data.user.id,
+              email: data.user.email!,
+              user_metadata: data.user.user_metadata,
+            },
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
           },
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token,
-        },
-      };
-    } catch (error: any) {
-      console.error('Sign in failed:', error);
-      return null;
+        };
+      } catch (error: any) {
+        lastError = error;
+
+        // Check if it's a retryable network error
+        if (error.message?.includes('body stream already read') || error.message?.includes('Failed to fetch')) {
+          retries--;
+          if (retries > 0) {
+            console.warn(`Sign in network error - retrying (${retries} left)...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+            continue;
+          }
+        }
+
+        break;
+      }
     }
+
+    console.error('Sign in failed:', lastError);
+    return null;
   },
 
   /**
