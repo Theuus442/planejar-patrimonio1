@@ -63,6 +63,7 @@ export const supabaseAuthService = {
                 role,
                 client_type: clientType,
               },
+              emailRedirectTo: `${window.location.origin}/confirmar-email`,
             },
           });
           authData = response.data;
