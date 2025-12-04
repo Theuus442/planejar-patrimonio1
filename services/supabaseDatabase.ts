@@ -79,19 +79,19 @@ export const usersDB = {
     try {
       const { data, error } = await getSupabase()
         .from('users')
-        .insert([{
+        .upsert({
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
           avatar_url: user.avatarUrl,
           client_type: user.clientType,
-        }])
+        })
         .select()
         .single();
 
       if (error) {
-        console.error('Error creating user in database:', {
+        console.error('Error upserting user in database:', {
           code: error.code,
           message: error.message,
           details: error.details,
