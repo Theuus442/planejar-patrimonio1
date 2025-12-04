@@ -1169,12 +1169,24 @@ async function mapDatabaseProjectToAppProject(dbProject: any): Promise<Project> 
 }
 
 // ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+const cleanFileName = (fileName: string): string => {
+  return fileName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '_')
+    .replace(/[^a-zA-Z0-9._-]/g, '');
+};
+
+// ============================================================================
 // FILE UPLOADS
 // ============================================================================
 export const filesDB = {
   async uploadProjectDocument(projectId: string, phaseId: number, file: File): Promise<string | null> {
     try {
-      const fileName = `projects/${projectId}/phase${phaseId}/${Date.now()}-${file.name}`;
+      const cleanedFileName = cleanFileName(file.name);
+      const fileName = `projects/${projectId}/phase${phaseId}/${Date.now()}-${cleanedFileName}`;
 
       const { data, error } = await getSupabase()
         .storage
