@@ -95,7 +95,7 @@ const DataCompletionProgress: React.FC<{ user: User }> = ({ user }) => {
 };
 
 interface MyDataScreenProps {
-  currentUser: User;
+  currentUser: User | null;
   projects: Project[];
   onUpdateUser: (userId: string, data: Partial<User>) => void;
   onUploadUserDocument: (userId: string, file: File, category: UserDocumentCategory, categoryLabel: string) => void;
@@ -106,6 +106,14 @@ interface MyDataScreenProps {
 }
 
 const MyDataScreen: React.FC<MyDataScreenProps> = ({ currentUser, onUpdateUser, onUploadUserDocument, onDeleteUserDocument, onBack }) => {
+  if (!currentUser) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-gray-600">Carregando seus dados...</p>
+      </div>
+    );
+  }
+
   const [userData, setUserData] = useState(currentUser);
   const [qualificationData, setQualificationData] = useState<PartnerQualificationData>(currentUser.qualificationData || {});
   
@@ -123,8 +131,8 @@ const MyDataScreen: React.FC<MyDataScreenProps> = ({ currentUser, onUpdateUser, 
   const handleQualificationChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const isCheckbox = type === 'checkbox';
-    // @ts-ignore
-    const finalValue = isCheckbox ? e.target.checked : value;
+    const target = e.target as HTMLInputElement;
+    const finalValue = isCheckbox ? target.checked : value;
     setQualificationData({ ...qualificationData, [name]: finalValue });
   };
   
@@ -132,7 +140,8 @@ const MyDataScreen: React.FC<MyDataScreenProps> = ({ currentUser, onUpdateUser, 
     e.preventDefault();
     onUpdateUser(currentUser.id, { name: userData.name, qualificationData });
     setInfoMessage({ type: 'success', text: 'Dados atualizados com sucesso!' });
-    setTimeout(() => setInfoMessage({ type: '', text: '' }), 3000);
+    const timeoutId = setTimeout(() => setInfoMessage({ type: '', text: '' }), 3000);
+    return () => clearTimeout(timeoutId);
   };
   
   const handleUpload = (file: File, category: UserDocumentCategory, label: string) => {
