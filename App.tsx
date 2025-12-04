@@ -179,11 +179,8 @@ const useStore = () => {
             if (userProject) {
                 setSelectedProjectId(userProject.id);
             }
-        } else if (currentUser && !selectedProjectId) {
-            setSelectedProjectId(null);
-            setCurrentView('dashboard');
         }
-    }, [currentUser, projects, selectedProjectId]);
+    }, [currentUser, projects]);
 
     const isPartnerDataComplete = (user: User): boolean => {
         if (!user || !user.clientType || !user.qualificationData) return false;
