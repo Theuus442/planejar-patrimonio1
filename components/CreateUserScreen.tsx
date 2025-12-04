@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserRole } from '../types';
 import Icon from './Icon';
-import { usersDB } from '../services/supabaseDatabase';
+import supabaseAuthService from '../services/supabaseAuth';
 
 interface CreateUserScreenProps {
     onBack: () => void;
@@ -57,16 +57,16 @@ const CreateUserScreen: React.FC<CreateUserScreenProps> = ({ onBack, onCreateUse
         setSuccessMessage('');
 
         try {
-            const newUser = {
-                name: name.trim(),
-                email: email.trim().toLowerCase(),
-                role: role,
-                qualifications: [],
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-            };
+            const result = await supabaseAuthService.signUpWithEmail(
+                email.trim().toLowerCase(),
+                password,
+                name.trim(),
+                role
+            );
 
-            await usersDB.createUser(newUser, password);
+            if (!result) {
+                throw new Error('Falha ao criar usuário. Tente novamente.');
+            }
 
             setSuccessMessage('Usuário criado com sucesso!');
             setTimeout(() => {
