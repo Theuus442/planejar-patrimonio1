@@ -82,18 +82,37 @@ export const dataMigrationService = {
             continue;
           }
 
-          // Create auth user
-          const result = await supabaseAuthService.signUpWithEmail(
-            userData.email,
-            userData.password,
-            userData.name,
-            userData.role as UserRole,
-            userData.clientType as 'partner' | 'interested' | undefined
-          );
+          // Create auth user with retry
+          let result = null;
+          let retries = 2;
 
-          if (result) {
-            console.log(`  ✓ Created user: ${userData.email}`);
-          } else {
+          while (retries > 0 && !result) {
+            try {
+              result = await supabaseAuthService.signUpWithEmail(
+                userData.email,
+                userData.password,
+                userData.name,
+                userData.role as UserRole,
+                userData.clientType as 'partner' | 'interested' | undefined
+              );
+
+              if (result) {
+                console.log(`  ✓ Created user: ${userData.email}`);
+                break;
+              }
+            } catch (retryError) {
+              retries--;
+              if (retries > 0) {
+                console.warn(`  ⚠ Retrying user creation for ${userData.email}...`);
+                // Wait before retry
+                await new Promise(resolve => setTimeout(resolve, 1500));
+              } else {
+                throw retryError;
+              }
+            }
+          }
+
+          if (!result) {
             console.error(`  ✗ Failed to create user: ${userData.email}`);
           }
         } catch (error) {

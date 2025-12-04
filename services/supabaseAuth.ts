@@ -47,18 +47,51 @@ export const supabaseAuthService = {
     clientType?: 'partner' | 'interested'
   ): Promise<{ user: User; session: AuthSession } | null> {
     try {
-      // Step 1: Create Auth user
-      const { data: authData, error: authError } = await getSupabaseAuth().auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-            role,
-            client_type: clientType,
+      // Step 1: Create Auth user with metadata
+      let authData;
+      let authError;
+
+      try {
+        const response = await getSupabaseAuth().auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name,
+              role,
+              client_type: clientType,
+            },
           },
-        },
-      });
+        });
+        authData = response.data;
+        authError = response.error;
+      } catch (sdkError: any) {
+        // Handle SDK-level errors (like "body stream already read")
+        // This can happen with network proxies or malformed responses
+        console.error('Supabase SDK error during sign up:', sdkError);
+
+        // Try to provide a helpful error message
+        if (sdkError.message?.includes('body stream already read')) {
+          console.warn('Supabase API connection issue - retrying...');
+          // Retry once
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const retryResponse = await getSupabaseAuth().auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                name,
+                role,
+                client_type: clientType,
+              },
+            },
+          });
+          authData = retryResponse.data;
+          authError = retryResponse.error;
+        } else {
+          throw sdkError;
+        }
+      }
 
       if (authError) {
         console.error('Sign up error:', authError);
@@ -69,18 +102,40 @@ export const supabaseAuthService = {
         throw new Error('No user returned from sign up');
       }
 
-      // Step 2: Create database user record
-      // The trigger will create the user, but we can also create it explicitly here if needed
-      const user = await usersDB.createUser({
-        id: authData.user.id,
-        name,
-        email,
-        role,
-        clientType,
-      });
+      // Step 2: Create database user record with retry logic
+      // The auth metadata is stored in Supabase Auth, but we also need it in the users table
+      let user = null;
+      let retries = 3;
+
+      while (retries > 0 && !user) {
+        try {
+          user = await usersDB.createUser({
+            id: authData.user.id,
+            name,
+            email,
+            role,
+            clientType,
+          });
+
+          if (user) break;
+        } catch (dbError) {
+          retries--;
+          if (retries > 0) {
+            // Wait a bit before retrying
+            await new Promise(resolve => setTimeout(resolve, 500));
+          } else {
+            console.error('Failed to create database user after retries:', dbError);
+            // Continue anyway - the user exists in Auth at least
+          }
+        }
+      }
+
+      if (!user) {
+        throw new Error('Failed to create database user record');
+      }
 
       return {
-        user: user!,
+        user,
         session: {
           user: {
             id: authData.user.id,

@@ -380,9 +380,14 @@ const useStore = () => {
                 const createdUserIds: string[] = [];
 
                 for (const clientData of allNewClientsData) {
+                    if (!clientData.password) {
+                        console.error('Password required for client:', clientData.email);
+                        continue;
+                    }
+
                     const result = await supabaseAuthService.signUpWithEmail(
                         clientData.email,
-                        clientData.password || 'TempPassword123!',
+                        clientData.password,
                         clientData.name,
                         UserRole.CLIENT,
                         clientData.clientType
@@ -577,7 +582,20 @@ const App = () => {
                         onUploadUserDocument={() => {}}
                         onDeleteUserDocument={() => {}}
                         onBack={store.actions.handleBackToDashboard}
-                        onChangePassword={() => ({ success: true, message: 'Mock success' })}
+                        onChangePassword={() => {
+                            const newPassword = window.prompt('Digite sua nova senha:');
+                            if (!newPassword) return { success: false, message: 'Operação cancelada' };
+
+                            supabaseAuthService.updatePassword(newPassword).then(success => {
+                                if (success) {
+                                    alert('Senha alterada com sucesso!');
+                                } else {
+                                    alert('Erro ao alterar senha');
+                                }
+                            });
+
+                            return { success: true, message: 'Processando...' };
+                        }}
                         onNavigateToTask={() => {}}
                     />;
         case 'create_client':
