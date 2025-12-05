@@ -30,6 +30,7 @@ import AIChat from './components/AIChat';
 import { createAIChatSession } from './services/geminiService';
 import Icon from './components/Icon';
 import SupportDashboard from './components/SupportDashboard';
+import Toast, { ToastMessage } from './components/Toast';
 
 // ============================================================================
 // STATE MANAGEMENT HOOK
@@ -52,6 +53,24 @@ const useStore = () => {
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isRecoveryMode, setIsRecoveryMode] = useState(false);
+    const [currentToast, setCurrentToast] = useState<ToastMessage | null>(null);
+
+    // ========================================================================
+    // TOAST NOTIFICATIONS
+    // ========================================================================
+
+    const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info', duration: number = 3000) => {
+        setCurrentToast({
+            id: Date.now().toString(),
+            message,
+            type,
+            duration,
+        });
+    };
+
+    const closeToast = () => {
+        setCurrentToast(null);
+    };
 
     // ========================================================================
     // INITIALIZATION
@@ -291,13 +310,27 @@ const useStore = () => {
             const oldProject = projects.find(p => p.id === projectId);
             if (!oldProject) return;
 
+            // Optimistic update - update local state immediately for better UX
+            setProjects(prev => prev.map(p =>
+                p.id === projectId ? { ...p, ...data } : p
+            ));
+
+            // Log phase advancement
             if (data.currentPhaseId && data.currentPhaseId !== oldProject.currentPhaseId && currentUser) {
                 await activityLogsDB.addLogEntry(projectId, currentUser.id, `avançou o projeto para a Fase ${data.currentPhaseId}.`);
             }
 
+            // Persist to database in the background
             const updated = await projectsDB.updateProject(projectId, data);
-            if (updated) {
-                await reloadProjects();
+
+            // If database update fails, revert to old state
+            if (!updated) {
+                setProjects(prev => prev.map(p =>
+                    p.id === projectId ? oldProject : p
+                ));
+                showToast('Erro ao salvar dados. Tente novamente.', 'error');
+            } else {
+                showToast('Dados salvos com sucesso!', 'success');
             }
         },
 
@@ -550,12 +583,13 @@ const useStore = () => {
         allUsers, projects, currentUser, isLoading, userForPasswordChange,
         currentView, selectedProject, notifications, activeChat, targetPhaseId, isAiChatOpen,
         aiChatMessages, isAiLoading, availableClients, isSidebarOpen, isRecoveryMode,
-        aiChatSession,
+        aiChatSession, currentToast,
         actions,
         setCurrentUser, setUserForPasswordChange, setCurrentView,
         setSelectedProjectId, setNotifications, setActiveChat, setTargetPhaseId,
         setIsAiChatOpen, setAiChatMessages, setAiChatSession, setIsAiLoading, setIsRecoveryMode,
-        isPartnerDataComplete, setProjects, setAllUsers, setIsSidebarOpen, reloadProjects
+        isPartnerDataComplete, setProjects, setAllUsers, setIsSidebarOpen, reloadProjects,
+        showToast, closeToast
     };
 };
 
@@ -825,7 +859,7 @@ const App = () => {
       )}
 
       {!store.isAiChatOpen && (
-          <button 
+          <button
             onClick={() => store.setIsAiChatOpen(true)}
             style={{position: 'fixed', bottom: '1.5rem', right: '1.5rem', backgroundColor: '#004c59', color: 'white', borderRadius: '50%', padding: '1rem', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', cursor: 'pointer', border: 'none'}}
             aria-label="Abrir chat com assistente IA"
@@ -833,6 +867,8 @@ const App = () => {
               <Icon name="ai" style={{width: '2rem', height: '2rem'}}/>
           </button>
       )}
+
+      <Toast toast={currentToast} onClose={closeToast} />
     </div>
   );
 };

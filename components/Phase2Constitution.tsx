@@ -178,7 +178,7 @@ export const Phase2Constitution: React.FC<Phase2ConstitutionProps> = ({ phase, p
         }
     };
 
-    const isFormReadOnly = isReadOnly || (isClientView && phaseData.status !== 'pending_client');
+    const isFormReadOnly = isReadOnly || (isClientView && phaseData.status === 'approved');
 
     return (
         <div className="p-4 sm:p-6 lg:p-8">
@@ -199,15 +199,32 @@ export const Phase2Constitution: React.FC<Phase2ConstitutionProps> = ({ phase, p
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="md:col-span-2">
                                 <label className="text-sm font-medium">Nome / Razão Social</label>
-                                <input type="text" value={phaseData.companyData.name || ''} onChange={(e) => handleDataChange('name', e.target.value)} className="mt-1 w-full rounded-md border border-gray-300" disabled={isFormReadOnly} />
+                                <input
+                                    type="text"
+                                    value={phaseData.companyData.name || ''}
+                                    onChange={(e) => handleDataChange('name', e.target.value)}
+                                    className="mt-1 w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900"
+                                    disabled={isFormReadOnly}
+                                />
                             </div>
                             <div>
                                 <label className="text-sm font-medium">Capital Social (R$)</label>
-                                <input type="number" value={phaseData.companyData.capital ?? ''} onChange={(e) => handleDataChange('capital', e.target.value === '' ? '' : Number(e.target.value))} className="mt-1 w-full rounded-md border border-gray-300" disabled={isFormReadOnly} />
+                                <input
+                                    type="number"
+                                    value={phaseData.companyData.capital ?? ''}
+                                    onChange={(e) => handleDataChange('capital', e.target.value === '' ? '' : Number(e.target.value))}
+                                    className="mt-1 w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900"
+                                    disabled={isFormReadOnly}
+                                />
                             </div>
                             <div>
                                 <label className="text-sm font-medium">Tipo Societário</label>
-                                <select value={phaseData.companyData.type || ''} onChange={(e) => handleDataChange('type', e.target.value)} className="mt-1 w-full rounded-md border border-gray-300" disabled={isFormReadOnly}>
+                                <select
+                                    value={phaseData.companyData.type || ''}
+                                    onChange={(e) => handleDataChange('type', e.target.value)}
+                                    className="mt-1 w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900"
+                                    disabled={isFormReadOnly}
+                                >
                                     <option value="">Selecione</option>
                                     <option value="LTDA">LTDA</option>
                                     <option value="S/A">S/A</option>
@@ -216,11 +233,23 @@ export const Phase2Constitution: React.FC<Phase2ConstitutionProps> = ({ phase, p
                             </div>
                             <div className="md:col-span-2">
                                 <label className="text-sm font-medium">Endereço da Sede</label>
-                                <input type="text" value={phaseData.companyData.address || ''} onChange={(e) => handleDataChange('address', e.target.value)} className="mt-1 w-full rounded-md border border-gray-300" disabled={isFormReadOnly} />
+                                <input
+                                    type="text"
+                                    value={phaseData.companyData.address || ''}
+                                    onChange={(e) => handleDataChange('address', e.target.value)}
+                                    className="mt-1 w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900"
+                                    disabled={isFormReadOnly}
+                                />
                             </div>
                             <div className="md:col-span-2">
                                 <label className="text-sm font-medium">CNAEs (principal e secundários)</label>
-                                <input type="text" value={phaseData.companyData.cnaes || ''} onChange={(e) => handleDataChange('cnaes', e.target.value)} className="mt-1 w-full rounded-md border border-gray-300" disabled={isFormReadOnly} />
+                                <input
+                                    type="text"
+                                    value={phaseData.companyData.cnaes || ''}
+                                    onChange={(e) => handleDataChange('cnaes', e.target.value)}
+                                    className="mt-1 w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900"
+                                    disabled={isFormReadOnly}
+                                />
                             </div>
                         </div>
                     </div>

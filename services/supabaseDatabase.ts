@@ -903,33 +903,38 @@ export const activityLogsDB = {
   },
 
   async getActivityLog(projectId: string): Promise<LogEntry[]> {
-    const { data, error } = await getSupabase()
-      .from('activity_logs')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching activity log:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-      });
+    try {
+      const { data, error } = await getSupabase()
+        .from('activity_logs')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.warn('Warning fetching activity log:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+        });
+        return [];
+      }
+
+      return Promise.all(
+        data.map(async (log) => {
+          const actor = await usersDB.getUser(log.actor_id);
+          return {
+            id: log.id,
+            actorId: log.actor_id,
+            actorName: actor?.name || 'Unknown',
+            action: log.action,
+            timestamp: log.created_at,
+          };
+        })
+      );
+    } catch (error) {
+      console.warn('Network error fetching activity log:', error);
       return [];
     }
-    
-    return Promise.all(
-      data.map(async (log) => {
-        const actor = await usersDB.getUser(log.actor_id);
-        return {
-          id: log.id,
-          actorId: log.actor_id,
-          actorName: actor?.name || 'Unknown',
-          action: log.action,
-          timestamp: log.created_at,
-        };
-      })
-    );
   },
 };
 
@@ -1389,21 +1394,39 @@ function mapDatabasePhase2DataToAppPhase2Data(dbData: any, dbPartners: any[]): P
 }
 
 async function mapDatabaseProjectToAppProject(dbProject: any): Promise<Project> {
-  const clients = await projectClientsDB.getProjectClients(dbProject.id);
-  const internalChat = await chatDB.getMessages(dbProject.id, 'internal');
-  const clientChat = await chatDB.getMessages(dbProject.id, 'client');
-  const activityLog = await activityLogsDB.getActivityLog(dbProject.id);
+  // Use Promise.allSettled to handle individual failures gracefully
+  const [
+    clientsResult,
+    internalChatResult,
+    clientChatResult,
+    activityLogResult,
+    phase1DataResult,
+    phase2DataResult,
+    phase3DataResult,
+    allDocumentsResult,
+  ] = await Promise.allSettled([
+    projectClientsDB.getProjectClients(dbProject.id),
+    chatDB.getMessages(dbProject.id, 'internal'),
+    chatDB.getMessages(dbProject.id, 'client'),
+    activityLogsDB.getActivityLog(dbProject.id),
+    phaseDataDB.getPhase1Data(dbProject.id),
+    phaseDataDB.getPhase2Data(dbProject.id),
+    phaseDataDB.getPhase3Data(dbProject.id),
+    documentsDB.listProjectDocuments(dbProject.id),
+  ]);
+
+  // Extract results, using defaults if any promise fails
+  const clients = clientsResult.status === 'fulfilled' ? clientsResult.value : [];
+  const internalChat = internalChatResult.status === 'fulfilled' ? internalChatResult.value : [];
+  const clientChat = clientChatResult.status === 'fulfilled' ? clientChatResult.value : [];
+  const activityLog = activityLogResult.status === 'fulfilled' ? activityLogResult.value : [];
+  const phase1Data = phase1DataResult.status === 'fulfilled' ? phase1DataResult.value : null;
+  const phase2Data = phase2DataResult.status === 'fulfilled' ? phase2DataResult.value : null;
+  const phase3Data = phase3DataResult.status === 'fulfilled' ? phase3DataResult.value : null;
+  const allDocuments = allDocumentsResult.status === 'fulfilled' ? allDocumentsResult.value : [];
 
   // Initialize phases with template
   const initialPhases = getInitialProjectPhases();
-
-  // Fetch phase-specific data from database
-  const phase1Data = await phaseDataDB.getPhase1Data(dbProject.id);
-  const phase2Data = await phaseDataDB.getPhase2Data(dbProject.id);
-  const phase3Data = await phaseDataDB.getPhase3Data(dbProject.id);
-
-  // Fetch all documents for this project
-  const allDocuments = await documentsDB.listProjectDocuments(dbProject.id);
 
   // Update phases with actual data from database
   const phases = initialPhases.map(phase => {
