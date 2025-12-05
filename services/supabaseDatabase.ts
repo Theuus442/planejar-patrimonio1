@@ -867,9 +867,14 @@ export const phaseDataDB = {
         partners: phaseData.partners,
         existing_companies: phaseData.existingCompanies,
         meeting_link: phaseData.meetingLink,
+        is_form_completed: phaseData.isFormCompleted,
+        meeting_scheduled: phaseData.meetingScheduled,
+        meeting_date_time: phaseData.meetingDateTime,
+        consultant_checklist: phaseData.consultantChecklist,
+        meeting_minutes: phaseData.meetingMinutes,
       }])
       .eq('project_id', projectId);
-    
+
     if (error) {
       console.error('Error updating phase 1 data:', error);
       return false;
