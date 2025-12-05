@@ -876,7 +876,7 @@ export const phaseDataDB = {
 
       const { error } = await getSupabase()
         .from('phase_1_data')
-        .upsert([updateData]);
+        .upsert([updateData], { onConflict: 'project_id' });
 
       if (error) {
         const errorDetails = {
