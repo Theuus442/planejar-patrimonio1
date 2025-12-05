@@ -998,9 +998,8 @@ export const phaseDataDB = {
       .upsert([{
         project_id: projectId,
         status: phaseData.status,
-      }])
-      .eq('project_id', projectId);
-    
+      }], { onConflict: 'project_id' });
+
     if (error) {
       console.error('Error updating phase 3 data:', error);
       return false;
