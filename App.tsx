@@ -291,13 +291,24 @@ const useStore = () => {
             const oldProject = projects.find(p => p.id === projectId);
             if (!oldProject) return;
 
+            // Optimistic update - update local state immediately for better UX
+            setProjects(prev => prev.map(p =>
+                p.id === projectId ? { ...p, ...data } : p
+            ));
+
+            // Log phase advancement
             if (data.currentPhaseId && data.currentPhaseId !== oldProject.currentPhaseId && currentUser) {
                 await activityLogsDB.addLogEntry(projectId, currentUser.id, `avançou o projeto para a Fase ${data.currentPhaseId}.`);
             }
 
+            // Persist to database in the background
             const updated = await projectsDB.updateProject(projectId, data);
-            if (updated) {
-                await reloadProjects();
+
+            // If database update fails, revert to old state
+            if (!updated) {
+                setProjects(prev => prev.map(p =>
+                    p.id === projectId ? oldProject : p
+                ));
             }
         },
 
