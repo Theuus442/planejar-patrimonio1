@@ -868,7 +868,7 @@ const App = () => {
           </button>
       )}
 
-      <Toast toast={currentToast} onClose={closeToast} />
+      <Toast toast={store.currentToast} onClose={store.closeToast} />
     </div>
   );
 };
