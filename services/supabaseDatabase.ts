@@ -41,7 +41,11 @@ export const usersDB = {
       .single();
     
     if (error) {
-      console.error('Error fetching user:', error);
+      console.error('Error fetching user:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return null;
     }
     return mapDatabaseUserToAppUser(data);
@@ -54,7 +58,11 @@ export const usersDB = {
       .order('name');
     
     if (error) {
-      console.error('Error listing users:', error);
+      console.error('Error listing users:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
@@ -69,7 +77,11 @@ export const usersDB = {
       .order('name');
     
     if (error) {
-      console.error('Error listing users by role:', error);
+      console.error('Error listing users by role:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
@@ -124,7 +136,11 @@ export const usersDB = {
       .single();
     
     if (error) {
-      console.error('Error updating user:', error);
+      console.error('Error updating user:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return null;
     }
     
@@ -138,7 +154,11 @@ export const usersDB = {
       .eq('id', userId);
     
     if (error) {
-      console.error('Error deleting user:', error);
+      console.error('Error deleting user:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
@@ -162,7 +182,11 @@ export const usersDB = {
       .eq('user_id', userId);
     
     if (error) {
-      console.error('Error updating qualification data:', error);
+      console.error('Error updating qualification data:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
@@ -203,7 +227,11 @@ export const userDocumentsDB = {
       }]);
     
     if (error) {
-      console.error('Error uploading user document:', error);
+      console.error('Error uploading user document:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
@@ -217,7 +245,11 @@ export const userDocumentsDB = {
       .order('uploaded_at', { ascending: false });
     
     if (error) {
-      console.error('Error fetching user documents:', error);
+      console.error('Error fetching user documents:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
@@ -231,7 +263,11 @@ export const userDocumentsDB = {
       .eq('id', documentId);
     
     if (error) {
-      console.error('Error deleting user document:', error);
+      console.error('Error deleting user document:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
