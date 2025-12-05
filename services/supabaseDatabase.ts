@@ -372,24 +372,37 @@ export const projectsDB = {
   },
 
   async createProject(project: Partial<Project> & { name: string; consultantId: string }): Promise<Project | null> {
-    const { data, error } = await getSupabase()
-      .from('projects')
-      .insert([{
-        name: project.name,
-        status: 'in-progress',
-        current_phase_id: 1,
-        consultant_id: project.consultantId,
-        auxiliary_id: project.auxiliaryId,
-      }])
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error creating project:', error);
+    try {
+      const { data, error } = await getSupabase()
+        .from('projects')
+        .insert([{
+          name: project.name,
+          status: 'in-progress',
+          current_phase_id: 1,
+          consultant_id: project.consultantId,
+          auxiliary_id: project.auxiliaryId,
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating project:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+        });
+        return null;
+      }
+
+      return await mapDatabaseProjectToAppProject(data);
+    } catch (err: any) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error('Error creating project:', {
+        message: errorMessage,
+        error: err,
+      });
       return null;
     }
-    
-    return await mapDatabaseProjectToAppProject(data);
   },
 
   async updateProject(projectId: string, updates: Partial<Project>): Promise<Project | null> {
