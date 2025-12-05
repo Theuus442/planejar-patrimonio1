@@ -903,33 +903,38 @@ export const activityLogsDB = {
   },
 
   async getActivityLog(projectId: string): Promise<LogEntry[]> {
-    const { data, error } = await getSupabase()
-      .from('activity_logs')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching activity log:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-      });
+    try {
+      const { data, error } = await getSupabase()
+        .from('activity_logs')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.warn('Warning fetching activity log:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+        });
+        return [];
+      }
+
+      return Promise.all(
+        data.map(async (log) => {
+          const actor = await usersDB.getUser(log.actor_id);
+          return {
+            id: log.id,
+            actorId: log.actor_id,
+            actorName: actor?.name || 'Unknown',
+            action: log.action,
+            timestamp: log.created_at,
+          };
+        })
+      );
+    } catch (error) {
+      console.warn('Network error fetching activity log:', error);
       return [];
     }
-    
-    return Promise.all(
-      data.map(async (log) => {
-        const actor = await usersDB.getUser(log.actor_id);
-        return {
-          id: log.id,
-          actorId: log.actor_id,
-          actorName: actor?.name || 'Unknown',
-          action: log.action,
-          timestamp: log.created_at,
-        };
-      })
-    );
   },
 };
 
