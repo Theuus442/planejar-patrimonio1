@@ -407,15 +407,25 @@ export const projectsDB = {
 
   async updateProject(projectId: string, updates: Partial<Project>): Promise<Project | null> {
     try {
+      // Build update object with only defined fields
+      const updateObj: any = {};
+
+      if (updates.name !== undefined) updateObj.name = updates.name;
+      if (updates.status !== undefined) updateObj.status = updates.status;
+      if (updates.currentPhaseId !== undefined) updateObj.current_phase_id = updates.currentPhaseId;
+      if (updates.auxiliaryId !== undefined) updateObj.auxiliary_id = updates.auxiliaryId;
+      if (updates.postCompletionStatus !== undefined) updateObj.post_completion_status = updates.postCompletionStatus;
+
+      // Check if there are any fields to update
+      if (Object.keys(updateObj).length === 0) {
+        console.warn('updateProject called with no updatable fields. Updates received:', updates);
+        // Return the current project without making an unnecessary API call
+        return await this.getProject(projectId);
+      }
+
       const { data, error } = await getSupabase()
         .from('projects')
-        .update({
-          name: updates.name,
-          status: updates.status,
-          current_phase_id: updates.currentPhaseId,
-          auxiliary_id: updates.auxiliaryId,
-          post_completion_status: updates.postCompletionStatus,
-        })
+        .update(updateObj)
         .eq('id', projectId)
         .select();
 
@@ -429,7 +439,7 @@ export const projectsDB = {
       }
 
       if (!data || (Array.isArray(data) && data.length === 0)) {
-        console.error('Error updating project: No data returned from update');
+        console.error('Error updating project: No data returned from update. ProjectId:', projectId, 'Updates:', updateObj);
         return null;
       }
 
