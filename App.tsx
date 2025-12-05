@@ -53,6 +53,24 @@ const useStore = () => {
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isRecoveryMode, setIsRecoveryMode] = useState(false);
+    const [currentToast, setCurrentToast] = useState<ToastMessage | null>(null);
+
+    // ========================================================================
+    // TOAST NOTIFICATIONS
+    // ========================================================================
+
+    const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info', duration: number = 3000) => {
+        setCurrentToast({
+            id: Date.now().toString(),
+            message,
+            type,
+            duration,
+        });
+    };
+
+    const closeToast = () => {
+        setCurrentToast(null);
+    };
 
     // ========================================================================
     // INITIALIZATION
