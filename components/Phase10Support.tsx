@@ -120,8 +120,8 @@ const Phase10Support: React.FC<Phase10SupportProps> = ({ phase, currentUser, onU
                  <div><dt className="text-gray-500">Data:</dt><dd>{new Date(request.createdAt).toLocaleDateString('pt-BR')}</dd></div>
                  <div>
                     <dt className="text-gray-500">Status:</dt>
-                    {canEdit ? 
-                        <select value={request.status} onChange={e => handleUpdateRequest(request.id, {status: e.target.value as SupportRequest['status']})} className="w-full text-sm rounded-md border-gray-300">
+                    {canEdit ?
+                        <select value={request.status || ''} onChange={e => handleUpdateRequest(request.id, {status: e.target.value as SupportRequest['status']})} className="w-full text-sm rounded-md border-gray-300">
                             <option value="open">Aberto</option>
                             <option value="in-progress">Em Andamento</option>
                             <option value="closed">Fechado</option>
@@ -131,8 +131,8 @@ const Phase10Support: React.FC<Phase10SupportProps> = ({ phase, currentUser, onU
                  </div>
                  <div>
                      <dt className="text-gray-500">Prioridade:</dt>
-                    {canEdit ? 
-                        <select value={request.priority} onChange={e => handleUpdateRequest(request.id, {priority: e.target.value as SupportRequest['priority']})} className="w-full text-sm rounded-md border-gray-300">
+                    {canEdit ?
+                        <select value={request.priority || ''} onChange={e => handleUpdateRequest(request.id, {priority: e.target.value as SupportRequest['priority']})} className="w-full text-sm rounded-md border-gray-300">
                             <option value="low">Baixa</option>
                             <option value="medium">Média</option>
                             <option value="high">Alta</option>

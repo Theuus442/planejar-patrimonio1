@@ -149,7 +149,7 @@ interface MeetingMinutesModalProps {
 }
 
 const MeetingMinutesModal: React.FC<MeetingMinutesModalProps> = ({ initialMinutes, onSave, onClose }) => {
-  const [minutes, setMinutes] = useState(initialMinutes);
+  const [minutes, setMinutes] = useState(initialMinutes || '');
 
   const handleSave = () => {
     onSave(minutes);

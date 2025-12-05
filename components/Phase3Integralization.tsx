@@ -110,11 +110,11 @@ const AssetEditForm: React.FC<{
             <div className="p-6 space-y-4">
               <div>
                 <label className="text-xs">Descrição Simples</label>
-                <input type="text" name="description" value={formData.description} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 disabled:bg-gray-100" disabled={isDescriptionDisabled}/>
+                <input type="text" name="description" value={formData.description || ''} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 disabled:bg-gray-100" disabled={isDescriptionDisabled}/>
               </div>
               <div>
                 <label className="text-xs">Valor de Integralização (R$) (Histórico do IR)</label>
-                <input type="number" name="value" value={formData.value} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 disabled:bg-gray-100" disabled={isValueDisabled} />
+                <input type="number" name="value" value={formData.value ?? ''} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 disabled:bg-gray-100" disabled={isValueDisabled} />
               </div>
               <div>
                 <label className="text-xs">Valor de Mercado (R$)</label>

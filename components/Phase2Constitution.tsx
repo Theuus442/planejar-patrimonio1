@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Phase, Phase2Data, UserRole, Project, User, NewClientData, PartnerDataForPhase2, Document as DocType, PartnerQualificationData, UserDocument } from '../types';
 import Icon from './Icon';
@@ -200,15 +199,15 @@ export const Phase2Constitution: React.FC<Phase2ConstitutionProps> = ({ phase, p
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="md:col-span-2">
                                 <label className="text-sm font-medium">Nome / Razão Social</label>
-                                <input type="text" value={phaseData.companyData.name} onChange={(e) => handleDataChange('name', e.target.value)} className="mt-1 w-full rounded-md border-gray-300" disabled={isFormReadOnly} />
+                                <input type="text" value={phaseData.companyData.name || ''} onChange={(e) => handleDataChange('name', e.target.value)} className="mt-1 w-full rounded-md border border-gray-300" disabled={isFormReadOnly} />
                             </div>
                             <div>
                                 <label className="text-sm font-medium">Capital Social (R$)</label>
-                                <input type="number" value={phaseData.companyData.capital} onChange={(e) => handleDataChange('capital', e.target.value === '' ? '' : Number(e.target.value))} className="mt-1 w-full rounded-md border-gray-300" disabled={isFormReadOnly} />
+                                <input type="number" value={phaseData.companyData.capital ?? ''} onChange={(e) => handleDataChange('capital', e.target.value === '' ? '' : Number(e.target.value))} className="mt-1 w-full rounded-md border border-gray-300" disabled={isFormReadOnly} />
                             </div>
                             <div>
                                 <label className="text-sm font-medium">Tipo Societário</label>
-                                <select value={phaseData.companyData.type} onChange={(e) => handleDataChange('type', e.target.value)} className="mt-1 w-full rounded-md border-gray-300" disabled={isFormReadOnly}>
+                                <select value={phaseData.companyData.type || ''} onChange={(e) => handleDataChange('type', e.target.value)} className="mt-1 w-full rounded-md border border-gray-300" disabled={isFormReadOnly}>
                                     <option value="">Selecione</option>
                                     <option value="LTDA">LTDA</option>
                                     <option value="S/A">S/A</option>
@@ -217,11 +216,11 @@ export const Phase2Constitution: React.FC<Phase2ConstitutionProps> = ({ phase, p
                             </div>
                             <div className="md:col-span-2">
                                 <label className="text-sm font-medium">Endereço da Sede</label>
-                                <input type="text" value={phaseData.companyData.address} onChange={(e) => handleDataChange('address', e.target.value)} className="mt-1 w-full rounded-md border-gray-300" disabled={isFormReadOnly} />
+                                <input type="text" value={phaseData.companyData.address || ''} onChange={(e) => handleDataChange('address', e.target.value)} className="mt-1 w-full rounded-md border border-gray-300" disabled={isFormReadOnly} />
                             </div>
                             <div className="md:col-span-2">
                                 <label className="text-sm font-medium">CNAEs (principal e secundários)</label>
-                                <input type="text" value={phaseData.companyData.cnaes} onChange={(e) => handleDataChange('cnaes', e.target.value)} className="mt-1 w-full rounded-md border-gray-300" disabled={isFormReadOnly} />
+                                <input type="text" value={phaseData.companyData.cnaes || ''} onChange={(e) => handleDataChange('cnaes', e.target.value)} className="mt-1 w-full rounded-md border border-gray-300" disabled={isFormReadOnly} />
                             </div>
                         </div>
                     </div>
@@ -238,7 +237,7 @@ export const Phase2Constitution: React.FC<Phase2ConstitutionProps> = ({ phase, p
                                     <div className="flex items-center space-x-4">
                                         <div className="w-32">
                                             <label className="text-xs">Participação (%)</label>
-                                            <input type="number" value={partner.participation} onChange={(e) => handlePartnerChange(partner.userId, 'participation', e.target.value === '' ? '' : Number(e.target.value))} className="w-full text-sm rounded-md border-gray-300" disabled={isFormReadOnly} />
+                                            <input type="number" value={partner.participation ?? ''} onChange={(e) => handlePartnerChange(partner.userId, 'participation', e.target.value === '' ? '' : Number(e.target.value))} className="w-full text-sm rounded-md border border-gray-300" disabled={isFormReadOnly} />
                                         </div>
                                         <div className="flex items-center pt-4">
                                             <input type="checkbox" id={`admin-${partner.userId}`} checked={partner.isAdministrator} onChange={(e) => handlePartnerChange(partner.userId, 'isAdministrator', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-brand-secondary focus:ring-brand-accent" disabled={isFormReadOnly} />

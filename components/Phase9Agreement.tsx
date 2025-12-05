@@ -135,7 +135,7 @@ const Phase9Agreement: React.FC<Phase9AgreementProps> = ({ phase, project, curre
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                     <label className="text-sm font-medium">Status do Acordo</label>
-                    <select value={localData.status} onChange={(e) => handleUpdate('status', e.target.value as Phase9AgreementData['status'])} className="mt-1 w-full text-sm rounded-md border-gray-300 disabled:bg-gray-100" disabled={isReadOnly}>
+                    <select value={localData.status || ''} onChange={(e) => handleUpdate('status', e.target.value as Phase9AgreementData['status'])} className="mt-1 w-full text-sm rounded-md border-gray-300 disabled:bg-gray-100" disabled={isReadOnly}>
                         <option value="pending_draft">Rascunho</option>
                         <option value="in_review">Em Revisão</option>
                         <option value="approved">Aprovado</option>

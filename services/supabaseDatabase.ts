@@ -41,7 +41,11 @@ export const usersDB = {
       .single();
     
     if (error) {
-      console.error('Error fetching user:', error);
+      console.error('Error fetching user:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return null;
     }
     return mapDatabaseUserToAppUser(data);
@@ -54,7 +58,11 @@ export const usersDB = {
       .order('name');
     
     if (error) {
-      console.error('Error listing users:', error);
+      console.error('Error listing users:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
@@ -69,7 +77,11 @@ export const usersDB = {
       .order('name');
     
     if (error) {
-      console.error('Error listing users by role:', error);
+      console.error('Error listing users by role:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
@@ -124,7 +136,11 @@ export const usersDB = {
       .single();
     
     if (error) {
-      console.error('Error updating user:', error);
+      console.error('Error updating user:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return null;
     }
     
@@ -138,7 +154,11 @@ export const usersDB = {
       .eq('id', userId);
     
     if (error) {
-      console.error('Error deleting user:', error);
+      console.error('Error deleting user:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
@@ -162,7 +182,11 @@ export const usersDB = {
       .eq('user_id', userId);
     
     if (error) {
-      console.error('Error updating qualification data:', error);
+      console.error('Error updating qualification data:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
@@ -203,7 +227,11 @@ export const userDocumentsDB = {
       }]);
     
     if (error) {
-      console.error('Error uploading user document:', error);
+      console.error('Error uploading user document:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
@@ -217,7 +245,11 @@ export const userDocumentsDB = {
       .order('uploaded_at', { ascending: false });
     
     if (error) {
-      console.error('Error fetching user documents:', error);
+      console.error('Error fetching user documents:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
@@ -231,7 +263,11 @@ export const userDocumentsDB = {
       .eq('id', documentId);
     
     if (error) {
-      console.error('Error deleting user document:', error);
+      console.error('Error deleting user document:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
@@ -498,7 +534,11 @@ export const projectsDB = {
       .eq('id', projectId);
     
     if (error) {
-      console.error('Error deleting project:', error);
+      console.error('Error deleting project:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
@@ -518,7 +558,11 @@ export const projectClientsDB = {
       }]);
     
     if (error) {
-      console.error('Error adding client to project:', error);
+      console.error('Error adding client to project:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
@@ -532,7 +576,11 @@ export const projectClientsDB = {
       .eq('client_id', clientId);
     
     if (error) {
-      console.error('Error removing client from project:', error);
+      console.error('Error removing client from project:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
@@ -545,7 +593,11 @@ export const projectClientsDB = {
       .eq('project_id', projectId);
     
     if (error) {
-      console.error('Error fetching project clients:', error);
+      console.error('Error fetching project clients:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
@@ -609,7 +661,11 @@ export const documentsDB = {
       .order('uploaded_at', { ascending: false });
     
     if (error) {
-      console.error('Error listing documents:', error);
+      console.error('Error listing documents:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
@@ -626,7 +682,11 @@ export const documentsDB = {
       .order('uploaded_at', { ascending: false });
     
     if (error) {
-      console.error('Error listing phase documents:', error);
+      console.error('Error listing phase documents:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
@@ -666,7 +726,11 @@ export const tasksDB = {
       .single();
     
     if (error) {
-      console.error('Error creating task:', error);
+      console.error('Error creating task:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return null;
     }
     
@@ -681,7 +745,11 @@ export const tasksDB = {
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.error('Error listing tasks:', error);
+      console.error('Error listing tasks:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
@@ -697,7 +765,11 @@ export const tasksDB = {
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.error('Error listing phase tasks:', error);
+      console.error('Error listing phase tasks:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
@@ -716,7 +788,11 @@ export const tasksDB = {
       .single();
     
     if (error) {
-      console.error('Error updating task:', error);
+      console.error('Error updating task:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return null;
     }
     
@@ -730,7 +806,11 @@ export const tasksDB = {
       .eq('id', taskId);
     
     if (error) {
-      console.error('Error deleting task:', error);
+      console.error('Error deleting task:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
@@ -755,7 +835,11 @@ export const chatDB = {
       .single();
     
     if (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending message:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return null;
     }
     
@@ -771,7 +855,11 @@ export const chatDB = {
       .order('created_at', { ascending: true });
     
     if (error) {
-      console.error('Error fetching messages:', error);
+      console.error('Error fetching messages:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
@@ -804,7 +892,11 @@ export const activityLogsDB = {
       }]);
     
     if (error) {
-      console.error('Error adding log entry:', error);
+      console.error('Error adding log entry:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return false;
     }
     return true;
@@ -818,7 +910,11 @@ export const activityLogsDB = {
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.error('Error fetching activity log:', error);
+      console.error('Error fetching activity log:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
       return [];
     }
     
