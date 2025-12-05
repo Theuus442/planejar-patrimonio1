@@ -180,18 +180,6 @@ export const Phase2Constitution: React.FC<Phase2ConstitutionProps> = ({ phase, p
 
     const isFormReadOnly = isReadOnly || (isClientView && phaseData.status === 'approved');
 
-    // Debug: Log why fields might be disabled
-    React.useEffect(() => {
-        console.log('[Phase2Constitution] Form state:', {
-            isFormReadOnly,
-            isReadOnly,
-            isClientView,
-            phaseDataStatus: phaseData.status,
-            canEdit,
-            currentUserRole: currentUser.role,
-        });
-    }, [isFormReadOnly, isReadOnly, isClientView, phaseData.status, canEdit, currentUser.role]);
-
     return (
         <div className="p-4 sm:p-6 lg:p-8">
              <Modal isOpen={isDataModalOpen} onClose={() => setIsDataModalOpen(false)} title={`Dados de ${selectedPartner?.name}`}>
