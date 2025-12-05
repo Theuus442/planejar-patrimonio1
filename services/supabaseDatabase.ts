@@ -417,7 +417,34 @@ export const projectsDB = {
         'phases'
       ];
 
-      // Build update object with only defined fields
+      // Handle phase data updates separately (stored in separate tables)
+      if (updates.phases !== undefined) {
+        const currentProject = await this.getProject(projectId);
+        if (currentProject && currentProject.phases) {
+          // Check each phase for updates
+          for (let i = 0; i < updates.phases.length; i++) {
+            const updatedPhase = updates.phases[i];
+            const currentPhase = currentProject.phases[i];
+
+            // Phase 1 data
+            if (updatedPhase.id === 1 && updatedPhase.phase1Data && JSON.stringify(updatedPhase.phase1Data) !== JSON.stringify(currentPhase?.phase1Data)) {
+              await phaseDataDB.updatePhase1Data(projectId, updatedPhase.phase1Data);
+            }
+            // Phase 2 data
+            else if (updatedPhase.id === 2 && updatedPhase.phase2Data && JSON.stringify(updatedPhase.phase2Data) !== JSON.stringify(currentPhase?.phase2Data)) {
+              await phaseDataDB.updatePhase2Data(projectId, updatedPhase.phase2Data);
+            }
+            // Phase 3 data
+            else if (updatedPhase.id === 3 && updatedPhase.phase3Data && JSON.stringify(updatedPhase.phase3Data) !== JSON.stringify(currentPhase?.phase3Data)) {
+              await phaseDataDB.updatePhase3Data(projectId, updatedPhase.phase3Data);
+            }
+          }
+        }
+        // Don't update phases in the projects table, they're stored separately
+        delete updates.phases;
+      }
+
+      // Build update object with only defined fields for the projects table
       const updateObj: any = {};
 
       if (updates.name !== undefined) updateObj.name = updates.name;
@@ -425,12 +452,10 @@ export const projectsDB = {
       if (updates.currentPhaseId !== undefined) updateObj.current_phase_id = updates.currentPhaseId;
       if (updates.auxiliaryId !== undefined) updateObj.auxiliary_id = updates.auxiliaryId;
       if (updates.postCompletionStatus !== undefined) updateObj.post_completion_status = updates.postCompletionStatus;
-      if (updates.phases !== undefined) updateObj.phases = updates.phases;
 
-      // Check if there are any fields to update
+      // If only phases were being updated, just return the current project
       if (Object.keys(updateObj).length === 0) {
-        console.warn('updateProject called with no updatable fields. Updates received:', updates);
-        // Return the current project without making an unnecessary API call
+        console.warn('updateProject called with only phase data. No project table fields updated.');
         return await this.getProject(projectId);
       }
 
