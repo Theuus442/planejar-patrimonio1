@@ -326,32 +326,49 @@ export const projectsDB = {
   },
 
   async listProjectsByClient(clientId: string): Promise<Project[]> {
-    const { data, error } = await getSupabase()
-      .from('project_clients')
-      .select('project_id')
-      .eq('client_id', clientId);
-    
-    if (error) {
-      console.error('Error listing client projects:', error);
+    try {
+      const { data, error } = await getSupabase()
+        .from('project_clients')
+        .select('project_id')
+        .eq('client_id', clientId);
+
+      if (error) {
+        console.error('Error listing client projects:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+        });
+        return [];
+      }
+
+      const projectIds = data.map(d => d.project_id);
+
+      if (projectIds.length === 0) return [];
+
+      const { data: projects, error: projectError } = await supabase
+        .from('projects')
+        .select('*')
+        .in('id', projectIds)
+        .order('created_at', { ascending: false });
+
+      if (projectError) {
+        console.error('Error fetching client projects:', {
+          code: projectError.code,
+          message: projectError.message,
+          details: projectError.details,
+        });
+        return [];
+      }
+
+      return Promise.all(projects.map(p => mapDatabaseProjectToAppProject(p)));
+    } catch (err: any) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error('Error listing client projects:', {
+        message: errorMessage,
+        error: err,
+      });
       return [];
     }
-    
-    const projectIds = data.map(d => d.project_id);
-    
-    if (projectIds.length === 0) return [];
-    
-    const { data: projects, error: projectError } = await supabase
-      .from('projects')
-      .select('*')
-      .in('id', projectIds)
-      .order('created_at', { ascending: false });
-    
-    if (projectError) {
-      console.error('Error fetching client projects:', projectError);
-      return [];
-    }
-    
-    return Promise.all(projects.map(p => mapDatabaseProjectToAppProject(p)));
   },
 
   async createProject(project: Partial<Project> & { name: string; consultantId: string }): Promise<Project | null> {
