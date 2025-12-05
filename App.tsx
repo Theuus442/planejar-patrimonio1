@@ -583,12 +583,13 @@ const useStore = () => {
         allUsers, projects, currentUser, isLoading, userForPasswordChange,
         currentView, selectedProject, notifications, activeChat, targetPhaseId, isAiChatOpen,
         aiChatMessages, isAiLoading, availableClients, isSidebarOpen, isRecoveryMode,
-        aiChatSession,
+        aiChatSession, currentToast,
         actions,
         setCurrentUser, setUserForPasswordChange, setCurrentView,
         setSelectedProjectId, setNotifications, setActiveChat, setTargetPhaseId,
         setIsAiChatOpen, setAiChatMessages, setAiChatSession, setIsAiLoading, setIsRecoveryMode,
-        isPartnerDataComplete, setProjects, setAllUsers, setIsSidebarOpen, reloadProjects
+        isPartnerDataComplete, setProjects, setAllUsers, setIsSidebarOpen, reloadProjects,
+        showToast, closeToast
     };
 };
 
