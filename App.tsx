@@ -180,14 +180,15 @@ const useStore = () => {
     const reloadProjects = useCallback(async () => {
         try {
             if (!currentUser) return;
-            
+
             let userProjects: Project[] = [];
             if (currentUser.role === UserRole.CLIENT) {
                 userProjects = await projectsDB.listProjectsByClient(currentUser.id);
             } else {
                 userProjects = await projectsDB.listProjects();
             }
-            
+
+            console.log('DEBUG: Projects loaded in reloadProjects:', userProjects.length, userProjects.map(p => ({ id: p.id, name: p.name })));
             setProjects(userProjects);
         } catch (error) {
             console.error('Error reloading projects:', error);
