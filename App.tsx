@@ -103,6 +103,12 @@ const useStore = () => {
                 console.error('Auth initialization error:', error);
                 const errorMessage = error?.message || 'Erro ao conectar com o servidor';
                 console.warn('⚠️ Connectivity issue detected:', errorMessage);
+
+                // Check if this is a network error
+                if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network Error')) {
+                    setConnectionError('Não foi possível conectar ao servidor. Verifique sua conexão com a internet e tente novamente.');
+                }
+
                 setCurrentUser(null);
             } finally {
                 setIsLoading(false);
