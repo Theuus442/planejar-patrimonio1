@@ -102,19 +102,26 @@ const useStore = () => {
                 console.error('Auth initialization error:', error);
                 const errorMessage = error?.message || 'Erro ao conectar com o servidor';
                 console.warn('⚠️ Connectivity issue detected:', errorMessage);
-
-                // Check if this is a network error
-                if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network Error')) {
-                    setConnectionError('Não foi possível conectar ao servidor. Verifique sua conexão com a internet e tente novamente.');
-                }
-
                 setCurrentUser(null);
             } finally {
                 setIsLoading(false);
             }
         };
 
+        // Add error handler to detect network errors
+        const handleError = (event: ErrorEvent) => {
+          if (event.message?.includes('Failed to fetch')) {
+            setConnectionError('Não foi possível conectar ao servidor. Verifique sua conexão com a internet e tente novamente.');
+          }
+        };
+
+        window.addEventListener('error', handleError);
+
         initializeAuth();
+
+        return () => {
+          window.removeEventListener('error', handleError);
+        };
 
         const unsubscribe = supabaseAuthService.onAuthStateChange(
             async (event, session) => {
