@@ -104,7 +104,19 @@ const ManageClientsModal: React.FC<ManageClientsModalProps> = ({ isOpen, onClose
                             <p className="text-xs text-gray-500">{client.email}</p>
                         </div>
                     </div>
-                    <button onClick={() => handleRemoveClient(client.id)} className="text-red-500 hover:text-red-700 font-medium text-sm">Remover</button>
+                    <button
+                      onClick={() => handleRemoveClient(client.id)}
+                      disabled={isRemoving === client.id}
+                      className="text-red-500 hover:text-red-700 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
+                      {isRemoving === client.id ? (
+                        <>
+                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', borderTop: '2px solid #ef4444', borderRight: '2px solid transparent', borderBottom: '2px solid transparent', borderLeft: '2px solid transparent', animation: 'spin 1s linear infinite' }}></div>
+                          Removendo...
+                        </>
+                      ) : (
+                        'Remover'
+                      )}
+                    </button>
                   </li>
                 ))}
               </ul>
