@@ -151,9 +151,8 @@ const DocumentsView: React.FC<DocumentsViewProps> = ({ project, users, onBack, o
     }
   };
 
-  const handleUpload = (file: File, phaseId: number, description: string) => {
-    onUploadDocument(project.id, phaseId, file, description);
-    setIsUploadModalOpen(false);
+  const handleUpload = async (file: File, phaseId: number, description: string) => {
+    await onUploadDocument(project.id, phaseId, file, description);
   }
 
   return (
