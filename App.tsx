@@ -507,17 +507,21 @@ const useStore = () => {
                             createdUserIds.push(result.user.id);
                         }
 
-                        // Add delay between sign-ups to respect rate limiting (60 seconds)
+                        // Add delay between sign-ups to respect Supabase rate limiting (60 seconds per sign-up)
                         // Only wait if there are more users to create
                         if (i < allNewClientsData.length - 1) {
-                            console.log('⏳ Aguardando antes do próximo sign-up (para evitar rate limiting)...');
-                            await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+                            const waitTime = 65000; // 65 seconds (60 + 5 second buffer)
+                            console.log(`⏳ Aguardando ${Math.round(waitTime / 1000)}s antes do próximo sign-up (rate limiting do Supabase)...`);
+                            showToast(`⏳ Aguardando ${Math.round(waitTime / 1000)}s para criar o próximo cliente...`, 'info', waitTime);
+                            await new Promise(resolve => setTimeout(resolve, waitTime));
                         }
                     } catch (signupError: any) {
                         // If rate limited, show user-friendly message
                         if (signupError?.message?.includes('security purposes')) {
-                            console.warn(`⚠️ Rate limiting ativado. Aguarde antes de tentar novamente.`, signupError.message);
-                            showToast('Muitas tentativas de criação. Aguarde 1 minuto e tente novamente.', 'warning', 5000);
+                            const match = signupError.message.match(/after (\d+) seconds/);
+                            const secondsToWait = match ? parseInt(match[1]) + 5 : 65;
+                            console.warn(`⚠️ Rate limiting ativado. Aguarde ${secondsToWait}s antes de tentar novamente.`, signupError.message);
+                            showToast(`⚠️ Muitas tentativas. Aguarde ${secondsToWait}s e tente novamente.`, 'error', 5000);
                             throw signupError;
                         }
                         console.error('Error creating user:', clientData.email, signupError);
