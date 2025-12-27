@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Project, Document, Phase, User } from '../types';
 import Icon from './Icon';
+import LoadingSpinner from './LoadingSpinner';
 
 interface UploadModalProps {
   phases: Phase[];
