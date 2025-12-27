@@ -310,20 +310,28 @@ export const userDocumentsDB = {
 
   async getUserDocuments(userId: string): Promise<any[]> {
     try {
-      const { data, error } = await getSupabase()
-        .from('user_documents')
-        .select('*')
-        .eq('user_id', userId)
-        .order('uploaded_at', { ascending: false });
+      const data = await retryWithBackoff(
+        async () => {
+          const { data: result, error } = await getSupabase()
+            .from('user_documents')
+            .select('*')
+            .eq('user_id', userId)
+            .order('uploaded_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching user documents:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-        });
-        return [];
-      }
+          if (error) {
+            console.error('Error fetching user documents:', {
+              message: error.message,
+              code: error.code,
+              details: error.details,
+            });
+            return [];
+          }
+
+          return result || [];
+        },
+        3,
+        500
+      );
 
       return data.map(mapDatabaseDocumentToAppDocument);
     } catch (err: any) {
