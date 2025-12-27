@@ -649,10 +649,19 @@ const App = () => {
         .loading-spinner {
           animation: spin 1s linear infinite;
         }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+        .pulse {
+          animation: pulse 2s ease-in-out infinite;
+        }
       `}</style>
-      <div style={{textAlign: 'center'}}>
+      <div style={{textAlign: 'center', maxWidth: '400px'}}>
         <p style={{fontSize: '1.25rem', color: '#374151', marginBottom: '1rem'}}>Carregando...</p>
-        <div className="loading-spinner" style={{width: '3rem', height: '3rem', margin: '0 auto', borderRadius: '50%', borderTop: '2px solid #004c59', borderRight: '2px solid transparent', borderBottom: '2px solid transparent', borderLeft: '2px solid transparent'}}></div>
+        <div className="loading-spinner" style={{width: '3rem', height: '3rem', margin: '0 auto 1.5rem', borderRadius: '50%', borderTop: '2px solid #004c59', borderRight: '2px solid transparent', borderBottom: '2px solid transparent', borderLeft: '2px solid transparent'}}></div>
+        <p style={{fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem'}}>Conectando ao servidor...</p>
+        <p style={{fontSize: '0.75rem', color: '#9ca3af', className: 'pulse'}}>Se isto demorar muito, verifique sua conexão com a internet</p>
       </div>
     </div>;
   }
