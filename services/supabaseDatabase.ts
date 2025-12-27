@@ -249,16 +249,24 @@ export const usersDB = {
 
   async getQualificationData(userId: string): Promise<any | null> {
     try {
-      const { data, error } = await getSupabase()
-        .from('partner_qualification_data')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
+      const data = await retryWithBackoff(
+        async () => {
+          const { data: result, error } = await getSupabase()
+            .from('partner_qualification_data')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle();
 
-      if (error) {
-        console.warn('Error fetching qualification data:', error.message || error);
-        return null;
-      }
+          if (error) {
+            console.warn('Error fetching qualification data:', error.message || error);
+            return null;
+          }
+
+          return result;
+        },
+        3,
+        500
+      );
 
       if (!data) {
         return null;
