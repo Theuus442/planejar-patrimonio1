@@ -83,6 +83,7 @@ const ManageClientsModal: React.FC<ManageClientsModalProps> = ({ isOpen, onClose
 
   return (
     <>
+      <style>{spinnerStyles}</style>
       <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} aria-hidden="true"></div>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="relative bg-white w-full max-w-2xl rounded-lg shadow-xl flex flex-col max-h-[90vh]">
