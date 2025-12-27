@@ -173,50 +173,66 @@ export const usersDB = {
   },
 
   async updateQualificationData(userId: string, qualificationData: any): Promise<boolean> {
-    const { error } = await getSupabase()
-      .from('partner_qualification_data')
-      .upsert([{
-        user_id: userId,
-        cpf: qualificationData.cpf,
-        rg: qualificationData.rg,
-        marital_status: qualificationData.maritalStatus,
-        property_regime: qualificationData.propertyRegime,
-        birth_date: qualificationData.birthDate,
-        nationality: qualificationData.nationality,
-        address: qualificationData.address,
-        phone: qualificationData.phone,
-        declares_income_tax: qualificationData.declaresIncomeTax,
-      }])
-      .eq('user_id', userId);
-    
-    if (error) {
-      console.error('Error updating qualification data:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
+    try {
+      const { error } = await getSupabase()
+        .from('partner_qualification_data')
+        .upsert([{
+          user_id: userId,
+          cpf: qualificationData.cpf,
+          rg: qualificationData.rg,
+          marital_status: qualificationData.maritalStatus,
+          property_regime: qualificationData.propertyRegime,
+          birth_date: qualificationData.birthDate,
+          nationality: qualificationData.nationality,
+          address: qualificationData.address,
+          phone: qualificationData.phone,
+          declares_income_tax: qualificationData.declaresIncomeTax,
+        }])
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error updating qualification data:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+        });
+        return false;
+      }
+      return true;
+    } catch (err: any) {
+      console.error('Unexpected error updating qualification data:', {
+        message: err?.message || String(err),
+        userId,
       });
       return false;
     }
-    return true;
   },
 
   async getQualificationData(userId: string): Promise<any | null> {
-    const { data, error } = await getSupabase()
-      .from('partner_qualification_data')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
+    try {
+      const { data, error } = await getSupabase()
+        .from('partner_qualification_data')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-    if (error) {
-      console.warn('Error fetching qualification data:', error.message || error);
+      if (error) {
+        console.warn('Error fetching qualification data:', error.message || error);
+        return null;
+      }
+
+      if (!data) {
+        return null;
+      }
+
+      return mapDatabaseQualificationToAppQualification(data);
+    } catch (err: any) {
+      console.error('Unexpected error fetching qualification data:', {
+        message: err?.message || String(err),
+        userId,
+      });
       return null;
     }
-
-    if (!data) {
-      return null;
-    }
-
-    return mapDatabaseQualificationToAppQualification(data);
   },
 };
 
