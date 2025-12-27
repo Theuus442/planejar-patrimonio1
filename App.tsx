@@ -486,22 +486,46 @@ const useStore = () => {
                 const allNewClientsData = [mainClientData, ...additionalClientsData];
                 const createdUserIds: string[] = [];
 
-                for (const clientData of allNewClientsData) {
+                for (let i = 0; i < allNewClientsData.length; i++) {
+                    const clientData = allNewClientsData[i];
+
                     if (!clientData.password) {
                         console.error('Password required for client:', clientData.email);
                         continue;
                     }
 
-                    const result = await supabaseAuthService.signUpWithEmail(
-                        clientData.email,
-                        clientData.password,
-                        clientData.name,
-                        UserRole.CLIENT,
-                        clientData.clientType
-                    );
+                    try {
+                        const result = await supabaseAuthService.signUpWithEmail(
+                            clientData.email,
+                            clientData.password,
+                            clientData.name,
+                            UserRole.CLIENT,
+                            clientData.clientType
+                        );
 
-                    if (result) {
-                        createdUserIds.push(result.user.id);
+                        if (result) {
+                            createdUserIds.push(result.user.id);
+                        }
+
+                        // Add delay between sign-ups to respect Supabase rate limiting (60 seconds per sign-up)
+                        // Only wait if there are more users to create
+                        if (i < allNewClientsData.length - 1) {
+                            const waitTime = 65000; // 65 seconds (60 + 5 second buffer)
+                            console.log(`⏳ Aguardando ${Math.round(waitTime / 1000)}s antes do próximo sign-up (rate limiting do Supabase)...`);
+                            showToast(`⏳ Aguardando ${Math.round(waitTime / 1000)}s para criar o próximo cliente...`, 'info', waitTime);
+                            await new Promise(resolve => setTimeout(resolve, waitTime));
+                        }
+                    } catch (signupError: any) {
+                        // If rate limited, show user-friendly message
+                        if (signupError?.message?.includes('security purposes')) {
+                            const match = signupError.message.match(/after (\d+) seconds/);
+                            const secondsToWait = match ? parseInt(match[1]) + 5 : 65;
+                            console.warn(`⚠️ Rate limiting ativado. Aguarde ${secondsToWait}s antes de tentar novamente.`, signupError.message);
+                            showToast(`⚠️ Muitas tentativas. Aguarde ${secondsToWait}s e tente novamente.`, 'error', 5000);
+                            throw signupError;
+                        }
+                        console.error('Error creating user:', clientData.email, signupError);
+                        throw signupError;
                     }
                 }
 

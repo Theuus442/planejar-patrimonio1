@@ -30,6 +30,45 @@ const getSupabase = () => {
 };
 
 // ============================================================================
+// RETRY HELPER FOR NETWORK ERRORS
+// ============================================================================
+const retryWithBackoff = async <T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  delayMs: number = 1000
+): Promise<T> => {
+  let lastError: any;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+
+      // Don't retry on auth or validation errors
+      if (error?.message?.includes('security purposes') ||
+          error?.message?.includes('Invalid') ||
+          error?.message?.includes('Unauthorized')) {
+        throw error;
+      }
+
+      // Only retry on network errors
+      if (!(error instanceof TypeError && error.message === 'Failed to fetch')) {
+        throw error;
+      }
+
+      if (attempt < maxRetries - 1) {
+        const waitTime = delayMs * Math.pow(2, attempt);
+        console.warn(`⚠️ Network error on attempt ${attempt + 1}/${maxRetries}. Retrying in ${waitTime}ms...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+  }
+
+  throw lastError;
+};
+
+// ============================================================================
 // USERS
 // ============================================================================
 export const usersDB = {
@@ -210,16 +249,24 @@ export const usersDB = {
 
   async getQualificationData(userId: string): Promise<any | null> {
     try {
-      const { data, error } = await getSupabase()
-        .from('partner_qualification_data')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
+      const data = await retryWithBackoff(
+        async () => {
+          const { data: result, error } = await getSupabase()
+            .from('partner_qualification_data')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle();
 
-      if (error) {
-        console.warn('Error fetching qualification data:', error.message || error);
-        return null;
-      }
+          if (error) {
+            console.warn('Error fetching qualification data:', error.message || error);
+            return null;
+          }
+
+          return result;
+        },
+        3,
+        500
+      );
 
       if (!data) {
         return null;
@@ -263,20 +310,28 @@ export const userDocumentsDB = {
 
   async getUserDocuments(userId: string): Promise<any[]> {
     try {
-      const { data, error } = await getSupabase()
-        .from('user_documents')
-        .select('*')
-        .eq('user_id', userId)
-        .order('uploaded_at', { ascending: false });
+      const data = await retryWithBackoff(
+        async () => {
+          const { data: result, error } = await getSupabase()
+            .from('user_documents')
+            .select('*')
+            .eq('user_id', userId)
+            .order('uploaded_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching user documents:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-        });
-        return [];
-      }
+          if (error) {
+            console.error('Error fetching user documents:', {
+              message: error.message,
+              code: error.code,
+              details: error.details,
+            });
+            return [];
+          }
+
+          return result || [];
+        },
+        3,
+        500
+      );
 
       return data.map(mapDatabaseDocumentToAppDocument);
     } catch (err: any) {

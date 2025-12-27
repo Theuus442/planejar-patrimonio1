@@ -209,6 +209,17 @@ const CreateClientScreen: React.FC<CreateClientScreenProps> = ({ onBack, onCreat
                                 </div>}
                             </div>
                             <p className="text-xs text-gray-500">Ao confirmar, os usuários serão criados com senhas provisórias. Eles serão solicitados a criar uma nova senha no primeiro acesso.</p>
+                            {additionalClients.length > 0 && (
+                                <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p className="text-sm font-semibold text-yellow-900 mb-2">⏳ Tempo de Processamento</p>
+                                    <p className="text-xs text-yellow-800">
+                                        Você está criando {1 + additionalClients.length} cliente(s).
+                                        Cada cliente leva até 65 segundos para ser criado (limite de segurança do Supabase).
+                                        <br/>
+                                        <strong>Tempo total estimado: {Math.round((additionalClients.length) * 65 / 60)} minuto(s)</strong>
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
