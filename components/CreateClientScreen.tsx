@@ -95,12 +95,17 @@ const CreateClientScreen: React.FC<CreateClientScreenProps> = ({ onBack, onCreat
         setAdditionalClients(prev => prev.filter(c => c.email !== email));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!projectName || !mainClient.email || !contractFile) {
             alert('Por favor, preencha todos os campos obrigatórios (nome do projeto, cliente principal e contrato) antes de finalizar.');
             return;
         }
-        onCreateClient(projectName, mainClient, additionalClients, contractFile);
+        setIsLoading(true);
+        try {
+            await onCreateClient(projectName, mainClient, additionalClients, contractFile);
+        } finally {
+            setIsLoading(false);
+        }
     };
     
     const steps = ["Projeto", "Cliente Principal", "Membros Adicionais", "Revisão"];
