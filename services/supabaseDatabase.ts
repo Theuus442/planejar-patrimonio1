@@ -553,18 +553,39 @@ export const projectsDB = {
 // ============================================================================
 export const projectClientsDB = {
   async addClientToProject(projectId: string, clientId: string): Promise<boolean> {
-    const { error } = await getSupabase()
+    // First check if the relationship already exists to prevent duplicates
+    const { data: existingData, error: checkError } = await getSupabase()
+      .from('project_clients')
+      .select('*')
+      .eq('project_id', projectId)
+      .eq('client_id', clientId)
+      .single();
+
+    // If the relationship already exists, return success (idempotent)
+    if (existingData) {
+      console.log(`Client ${clientId} already exists in project ${projectId}`);
+      return true;
+    }
+
+    // If there was an error other than "no rows", log it
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.warn('Error checking existing client:', checkError);
+      // Continue with insert anyway
+    }
+
+    // Insert the new relationship
+    const { error: insertError } = await getSupabase()
       .from('project_clients')
       .insert([{
         project_id: projectId,
         client_id: clientId,
       }]);
-    
-    if (error) {
+
+    if (insertError) {
       console.error('Error adding client to project:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
+        message: insertError.message,
+        code: insertError.code,
+        details: insertError.details,
       });
       return false;
     }
