@@ -1465,6 +1465,12 @@ async function mapDatabaseProjectToAppProject(dbProject: any): Promise<Project> 
     };
   });
 
+  // Deduplicate clientIds in case there are duplicates in the database
+  const uniqueClientIds = Array.from(new Set(clients.map(c => c.id)));
+  if (uniqueClientIds.length < clients.length) {
+    console.warn(`Duplicate clients detected for project ${dbProject.id}. Found ${clients.length} clients but ${uniqueClientIds.length} unique IDs. Duplicates have been removed.`);
+  }
+
   return {
     id: dbProject.id,
     name: dbProject.name,
@@ -1472,7 +1478,7 @@ async function mapDatabaseProjectToAppProject(dbProject: any): Promise<Project> 
     currentPhaseId: dbProject.current_phase_id,
     consultantId: dbProject.consultant_id,
     auxiliaryId: dbProject.auxiliary_id,
-    clientIds: clients.map(c => c.id),
+    clientIds: uniqueClientIds,
     phases,
     internalChat,
     clientChat,
