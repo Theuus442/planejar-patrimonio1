@@ -673,6 +673,33 @@ const App = () => {
     </div>;
   }
 
+  if (connectionError) {
+    return (
+      <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#fef2f2', fontFamily: 'sans-serif'}}>
+        <div style={{textAlign: 'center', maxWidth: '500px', padding: '2rem'}}>
+          <div style={{fontSize: '3rem', marginBottom: '1rem'}}>⚠️</div>
+          <h1 style={{fontSize: '1.5rem', fontWeight: 'bold', color: '#dc2626', marginBottom: '1rem'}}>Erro de Conectividade</h1>
+          <p style={{color: '#7f1d1d', marginBottom: '1.5rem'}}>{connectionError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: '#dc2626',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.375rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              fontSize: '1rem'
+            }}
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (store.userForPasswordChange) {
     return <ChangePasswordScreen user={store.userForPasswordChange} onPasswordChanged={store.actions.handlePasswordChanged} onCancel={store.actions.handleCancelPasswordChange} />;
   }
