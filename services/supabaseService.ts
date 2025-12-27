@@ -2,6 +2,46 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 let supabaseClient: SupabaseClient | null = null;
 
+// Retry helper with exponential backoff
+export const retryWithBackoff = async <T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelayMs: number = 500
+): Promise<T> => {
+  let lastError: any;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+
+      // Don't retry on authentication errors
+      if (error?.message?.includes('Invalid API Key') ||
+          error?.message?.includes('PGRST')) {
+        throw error;
+      }
+
+      // Check if it's a network error worth retrying
+      if (!(error instanceof TypeError && error.message === 'Failed to fetch')) {
+        throw error;
+      }
+
+      // If this is the last attempt, throw
+      if (attempt === maxRetries - 1) {
+        break;
+      }
+
+      // Exponential backoff with jitter
+      const delayMs = baseDelayMs * Math.pow(2, attempt) + Math.random() * 1000;
+      console.warn(`Network error on attempt ${attempt + 1}/${maxRetries}. Retrying in ${Math.round(delayMs)}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+  }
+
+  throw lastError;
+};
+
 const getSupabaseClient = (): SupabaseClient => {
   if (!supabaseClient) {
     const url = import.meta.env.VITE_SUPABASE_URL;
