@@ -15,12 +15,24 @@ const getSupabaseClient = (): SupabaseClient => {
     if (!url || !anonKey) {
       const errorMsg = `Missing Supabase configuration:
         - VITE_SUPABASE_URL: ${url ? 'SET' : 'MISSING'}
-        - VITE_SUPABASE_ANON_KEY: ${anonKey ? 'SET' : 'MISSING'}`;
+        - VITE_SUPABASE_ANON_KEY: ${anonKey ? 'SET' : 'MISSING'}
+
+Make sure environment variables are set in DevServerControl or .env file`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch {
+      const errorMsg = `Invalid VITE_SUPABASE_URL format: ${url}`;
       console.error(errorMsg);
       throw new Error(errorMsg);
     }
 
     supabaseClient = createClient(url, anonKey);
+    console.log('✅ Supabase client initialized successfully');
   }
 
   return supabaseClient;
