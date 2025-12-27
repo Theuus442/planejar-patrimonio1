@@ -22,7 +22,7 @@ const ManageClientsModal: React.FC<ManageClientsModalProps> = ({ isOpen, onClose
     return project.clientIds.map(id => allUsers.find(u => u.id === id)).filter((u): u is User => !!u);
   }, [project.clientIds, allUsers]);
 
-  const handleAddClient = () => {
+  const handleAddClient = async () => {
     setError('');
     if (!newClient.name.trim() || !newClient.email.trim() || !newClient.password.trim()) {
         setError('Nome, e-mail e senha são obrigatórios.');
@@ -34,22 +34,27 @@ const ManageClientsModal: React.FC<ManageClientsModalProps> = ({ isOpen, onClose
         return;
     }
 
-    const newUser: User = {
-        id: `user-${Date.now()}`,
-        name: newClient.name,
-        email: newClient.email,
-        password: newClient.password,
-        clientType: newClient.clientType,
-        role: UserRole.CLIENT,
-        requiresPasswordChange: true,
-    };
+    setIsLoading(true);
+    try {
+        const newUser: User = {
+            id: `user-${Date.now()}`,
+            name: newClient.name,
+            email: newClient.email,
+            password: newClient.password,
+            clientType: newClient.clientType,
+            role: UserRole.CLIENT,
+            requiresPasswordChange: true,
+        };
 
-    onAddUser(newUser);
-    // Only add if not already in the project (prevent duplicates)
-    if (!project.clientIds.includes(newUser.id)) {
-        onUpdateProject(project.id, { clientIds: [...project.clientIds, newUser.id] });
+        onAddUser(newUser);
+        // Only add if not already in the project (prevent duplicates)
+        if (!project.clientIds.includes(newUser.id)) {
+            onUpdateProject(project.id, { clientIds: [...project.clientIds, newUser.id] });
+        }
+        setNewClient({ name: '', email: '', password: '', clientType: 'partner' });
+    } finally {
+        setIsLoading(false);
     }
-    setNewClient({ name: '', email: '', password: '', clientType: 'partner' });
   };
 
   const handleRemoveClient = (clientId: string) => {
