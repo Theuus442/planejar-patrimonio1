@@ -30,6 +30,45 @@ const getSupabase = () => {
 };
 
 // ============================================================================
+// RETRY HELPER FOR NETWORK ERRORS
+// ============================================================================
+const retryWithBackoff = async <T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  delayMs: number = 1000
+): Promise<T> => {
+  let lastError: any;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+
+      // Don't retry on auth or validation errors
+      if (error?.message?.includes('security purposes') ||
+          error?.message?.includes('Invalid') ||
+          error?.message?.includes('Unauthorized')) {
+        throw error;
+      }
+
+      // Only retry on network errors
+      if (!(error instanceof TypeError && error.message === 'Failed to fetch')) {
+        throw error;
+      }
+
+      if (attempt < maxRetries - 1) {
+        const waitTime = delayMs * Math.pow(2, attempt);
+        console.warn(`⚠️ Network error on attempt ${attempt + 1}/${maxRetries}. Retrying in ${waitTime}ms...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+  }
+
+  throw lastError;
+};
+
+// ============================================================================
 // USERS
 // ============================================================================
 export const usersDB = {
