@@ -188,7 +188,6 @@ const useStore = () => {
                 userProjects = await projectsDB.listProjects();
             }
 
-            console.log('DEBUG: Projects loaded in reloadProjects:', userProjects.length, userProjects.map(p => ({ id: p.id, name: p.name })));
             setProjects(userProjects);
         } catch (error) {
             console.error('Error reloading projects:', error);
