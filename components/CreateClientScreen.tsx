@@ -255,16 +255,16 @@ const CreateClientScreen: React.FC<CreateClientScreenProps> = ({ onBack, onCreat
                 </div>
 
                 <div className="flex justify-between items-center pt-8 border-t mt-8">
-                    <button onClick={handleBack} disabled={step === 1} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 disabled:opacity-50">
+                    <button onClick={handleBack} disabled={step === 1 || isLoading} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
                         Voltar
                     </button>
                     {step < 4 ? (
-                        <button onClick={handleNext} className="px-6 py-3 bg-brand-secondary text-white rounded-lg font-semibold hover:bg-brand-primary">
+                        <button onClick={handleNext} disabled={isLoading} className="px-6 py-3 bg-brand-secondary text-white rounded-lg font-semibold hover:bg-brand-primary disabled:opacity-50 disabled:cursor-not-allowed">
                             Avançar
                         </button>
                     ) : (
-                        <button onClick={handleSubmit} className="px-6 py-3 bg-brand-accent text-brand-dark rounded-lg font-semibold hover:opacity-90">
-                            Confirmar e Criar Projeto
+                        <button onClick={handleSubmit} disabled={isLoading} className="px-6 py-3 bg-brand-accent text-brand-dark rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">
+                            {isLoading ? 'Criando...' : 'Confirmar e Criar Projeto'}
                         </button>
                     )}
                 </div>
