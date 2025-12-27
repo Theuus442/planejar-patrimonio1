@@ -108,20 +108,7 @@ const useStore = () => {
             }
         };
 
-        // Add error handler to detect network errors
-        const handleError = (event: ErrorEvent) => {
-          if (event.message?.includes('Failed to fetch')) {
-            setConnectionError('Não foi possível conectar ao servidor. Verifique sua conexão com a internet e tente novamente.');
-          }
-        };
-
-        window.addEventListener('error', handleError);
-
         initializeAuth();
-
-        return () => {
-          window.removeEventListener('error', handleError);
-        };
 
         const unsubscribe = supabaseAuthService.onAuthStateChange(
             async (event, session) => {
