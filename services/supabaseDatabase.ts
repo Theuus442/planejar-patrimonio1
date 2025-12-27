@@ -34,21 +34,29 @@ const getSupabase = () => {
 // ============================================================================
 export const usersDB = {
   async getUser(userId: string): Promise<User | null> {
-    const { data, error } = await getSupabase()
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (error) {
-      console.error('Error fetching user:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
+    try {
+      const { data, error } = await getSupabase()
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+        });
+        return null;
+      }
+      return mapDatabaseUserToAppUser(data);
+    } catch (err: any) {
+      console.error('Unexpected error fetching user:', {
+        message: err?.message || String(err),
+        userId,
       });
       return null;
     }
-    return mapDatabaseUserToAppUser(data);
   },
 
   async listUsers(): Promise<User[]> {
