@@ -18,6 +18,12 @@ const ManageClientsModal: React.FC<ManageClientsModalProps> = ({ isOpen, onClose
   const [isLoading, setIsLoading] = useState(false);
   const [isRemoving, setIsRemoving] = useState<string | null>(null);
 
+  const spinnerStyles = `
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  `;
+
   const projectClients = useMemo(() => {
     return project.clientIds.map(id => allUsers.find(u => u.id === id)).filter((u): u is User => !!u);
   }, [project.clientIds, allUsers]);
