@@ -246,22 +246,30 @@ export const userDocumentsDB = {
   },
 
   async getUserDocuments(userId: string): Promise<any[]> {
-    const { data, error } = await getSupabase()
-      .from('user_documents')
-      .select('*')
-      .eq('user_id', userId)
-      .order('uploaded_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching user documents:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
+    try {
+      const { data, error } = await getSupabase()
+        .from('user_documents')
+        .select('*')
+        .eq('user_id', userId)
+        .order('uploaded_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching user documents:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+        });
+        return [];
+      }
+
+      return data.map(mapDatabaseDocumentToAppDocument);
+    } catch (err: any) {
+      console.error('Unexpected error fetching user documents:', {
+        message: err?.message || String(err),
+        userId,
       });
       return [];
     }
-    
-    return data.map(mapDatabaseDocumentToAppDocument);
   },
 
   async deleteUserDocument(documentId: string): Promise<boolean> {
