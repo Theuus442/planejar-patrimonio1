@@ -126,18 +126,56 @@ const ManageClientsModal: React.FC<ManageClientsModalProps> = ({ isOpen, onClose
               <h3 className="font-semibold text-gray-800 mb-4">Adicionar Novo Cliente ao Projeto</h3>
               <div className="p-4 border rounded-lg bg-gray-50 space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" placeholder="Nome do cliente" value={newClient.name} onChange={(e) => setNewClient(p => ({ ...p, name: e.target.value }))} className="w-full px-3 py-2 text-sm border-gray-300 rounded-md" />
-                    <input type="email" placeholder="E-mail" value={newClient.email} onChange={(e) => setNewClient(p => ({ ...p, email: e.target.value }))} className="w-full px-3 py-2 text-sm border-gray-300 rounded-md" />
+                    <input
+                      type="text"
+                      placeholder="Nome do cliente"
+                      value={newClient.name}
+                      onChange={(e) => setNewClient(p => ({ ...p, name: e.target.value }))}
+                      disabled={isLoading}
+                      className="w-full px-3 py-2 text-sm border-gray-300 rounded-md disabled:bg-gray-200 disabled:cursor-not-allowed"
+                    />
+                    <input
+                      type="email"
+                      placeholder="E-mail"
+                      value={newClient.email}
+                      onChange={(e) => setNewClient(p => ({ ...p, email: e.target.value }))}
+                      disabled={isLoading}
+                      className="w-full px-3 py-2 text-sm border-gray-300 rounded-md disabled:bg-gray-200 disabled:cursor-not-allowed"
+                    />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="password" placeholder="Senha provisória" value={newClient.password} onChange={(e) => setNewClient(p => ({ ...p, password: e.target.value }))} className="w-full px-3 py-2 text-sm border-gray-300 rounded-md" />
-                    <select value={newClient.clientType} onChange={(e) => setNewClient(p => ({ ...p, clientType: e.target.value as any }))} className="w-full px-3 py-2 text-sm border-gray-300 rounded-md">
+                    <input
+                      type="password"
+                      placeholder="Senha provisória"
+                      value={newClient.password}
+                      onChange={(e) => setNewClient(p => ({ ...p, password: e.target.value }))}
+                      disabled={isLoading}
+                      className="w-full px-3 py-2 text-sm border-gray-300 rounded-md disabled:bg-gray-200 disabled:cursor-not-allowed"
+                    />
+                    <select
+                      value={newClient.clientType}
+                      onChange={(e) => setNewClient(p => ({ ...p, clientType: e.target.value as any }))}
+                      disabled={isLoading}
+                      className="w-full px-3 py-2 text-sm border-gray-300 rounded-md disabled:bg-gray-200 disabled:cursor-not-allowed">
                         <option value="partner">Sócio</option>
                         <option value="interested">Interessado</option>
                     </select>
                 </div>
                 <div className="flex justify-end">
-                    <button type="button" onClick={handleAddClient} className="px-4 py-2 bg-brand-secondary text-white text-sm font-medium rounded-md hover:bg-brand-primary">Adicionar Cliente</button>
+                    <button
+                      type="button"
+                      onClick={handleAddClient}
+                      disabled={isLoading}
+                      className="px-4 py-2 bg-brand-secondary text-white text-sm font-medium rounded-md hover:bg-brand-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                      {isLoading ? (
+                        <>
+                          <div style={{ width: '14px', height: '14px', borderRadius: '50%', borderTop: '2px solid white', borderRight: '2px solid transparent', borderBottom: '2px solid transparent', borderLeft: '2px solid transparent', animation: 'spin 1s linear infinite' }}></div>
+                          Adicionando...
+                        </>
+                      ) : (
+                        'Adicionar Cliente'
+                      )}
+                    </button>
                 </div>
                 {error && <p className="text-xs text-red-500 text-right">{error}</p>}
               </div>
