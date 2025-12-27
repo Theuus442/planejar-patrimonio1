@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { NewClientData, User } from '../types';
 import Icon from './Icon';
+import LoadingSpinner from './LoadingSpinner';
 
 interface CreateClientScreenProps {
     onBack: () => void;
@@ -25,6 +26,7 @@ const CreateClientScreen: React.FC<CreateClientScreenProps> = ({ onBack, onCreat
     const [additionalClients, setAdditionalClients] = useState<NewClientData[]>([]);
     const [currentAdditional, setCurrentAdditional] = useState<NewClientData>({ name: '', email: '', clientType: 'interested', password: '' });
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isLoading, setIsLoading] = useState(false);
 
     const existingEmails = useMemo(() => new Set(allUsers.map(u => u.email.toLowerCase())), [allUsers]);
 
@@ -93,15 +95,43 @@ const CreateClientScreen: React.FC<CreateClientScreenProps> = ({ onBack, onCreat
         setAdditionalClients(prev => prev.filter(c => c.email !== email));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!projectName || !mainClient.email || !contractFile) {
             alert('Por favor, preencha todos os campos obrigatórios (nome do projeto, cliente principal e contrato) antes de finalizar.');
             return;
         }
-        onCreateClient(projectName, mainClient, additionalClients, contractFile);
+        setIsLoading(true);
+        try {
+            await onCreateClient(projectName, mainClient, additionalClients, contractFile);
+        } finally {
+            setIsLoading(false);
+        }
     };
     
     const steps = ["Projeto", "Cliente Principal", "Membros Adicionais", "Revisão"];
+
+    if (isLoading) {
+        return (
+            <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+                <div className="bg-white rounded-lg p-8 max-w-sm w-full mx-4 shadow-xl">
+                    <div className="flex flex-col items-center">
+                        <LoadingSpinner size="large" />
+                        <h3 className="mt-4 text-lg font-semibold text-gray-800">Criando projeto...</h3>
+                        <p className="mt-2 text-sm text-gray-600 text-center">
+                            Esto pode levar alguns minutos. Por favor, não feche esta página.
+                        </p>
+                        {additionalClients.length > 0 && (
+                            <p className="mt-3 text-xs text-gray-500 text-center">
+                                Criando {1 + additionalClients.length} cliente(s)...
+                                <br/>
+                                Cada um leva até 65 segundos
+                            </p>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 sm:p-6 lg:p-8">
@@ -225,16 +255,16 @@ const CreateClientScreen: React.FC<CreateClientScreenProps> = ({ onBack, onCreat
                 </div>
 
                 <div className="flex justify-between items-center pt-8 border-t mt-8">
-                    <button onClick={handleBack} disabled={step === 1} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 disabled:opacity-50">
+                    <button onClick={handleBack} disabled={step === 1 || isLoading} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
                         Voltar
                     </button>
                     {step < 4 ? (
-                        <button onClick={handleNext} className="px-6 py-3 bg-brand-secondary text-white rounded-lg font-semibold hover:bg-brand-primary">
+                        <button onClick={handleNext} disabled={isLoading} className="px-6 py-3 bg-brand-secondary text-white rounded-lg font-semibold hover:bg-brand-primary disabled:opacity-50 disabled:cursor-not-allowed">
                             Avançar
                         </button>
                     ) : (
-                        <button onClick={handleSubmit} className="px-6 py-3 bg-brand-accent text-brand-dark rounded-lg font-semibold hover:opacity-90">
-                            Confirmar e Criar Projeto
+                        <button onClick={handleSubmit} disabled={isLoading} className="px-6 py-3 bg-brand-accent text-brand-dark rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">
+                            {isLoading ? 'Criando...' : 'Confirmar e Criar Projeto'}
                         </button>
                     )}
                 </div>

@@ -1,27 +1,40 @@
 import React, { useState, useMemo } from 'react';
 import { Project, Document, Phase, User } from '../types';
 import Icon from './Icon';
+import LoadingSpinner from './LoadingSpinner';
 
 interface UploadModalProps {
   phases: Phase[];
   onClose: () => void;
-  onUpload: (file: File, phaseId: number, description: string) => void;
+  onUpload: (file: File, phaseId: number, description: string) => Promise<void>;
 }
 
 const UploadModal: React.FC<UploadModalProps> = ({ phases, onClose, onUpload }) => {
     const [file, setFile] = useState<File | null>(null);
     const [phaseId, setPhaseId] = useState<number>(phases[0]?.id || 1);
     const [description, setDescription] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (file && phaseId) {
-            onUpload(file, phaseId, description);
+            setIsLoading(true);
+            try {
+                await onUpload(file, phaseId, description);
+                onClose();
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
     
     return (
       <>
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
         <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} aria-hidden="true"></div>
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <form onSubmit={handleSubmit} className="relative bg-white w-full max-w-lg rounded-lg shadow-xl flex flex-col max-h-[90vh]">
@@ -30,24 +43,43 @@ const UploadModal: React.FC<UploadModalProps> = ({ phases, onClose, onUpload }) 
                     <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-gray-200"><Icon name="close" className="w-6 h-6 text-gray-600" /></button>
                 </div>
                 <div className="p-6 space-y-4">
-                    <div>
-                        <label className="text-sm font-medium text-gray-700">Arquivo</label>
-                        <input type="file" required onChange={(e) => setFile(e.target.files?.[0] || null)} className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-                    </div>
-                     <div>
-                        <label className="text-sm font-medium text-gray-700">Fase do Projeto</label>
-                        <select value={phaseId} onChange={(e) => setPhaseId(Number(e.target.value))} className="mt-1 w-full rounded-md border-gray-300">
-                            {phases.map(p => <option key={p.id} value={p.id}>{p.id}. {p.title}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="text-sm font-medium text-gray-700">Descrição (Opcional)</label>
-                        <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ex: Contrato Social V2" className="mt-1 w-full rounded-md border-gray-300"/>
-                    </div>
+                    {isLoading ? (
+                        <div className="flex flex-col items-center justify-center py-8">
+                            <LoadingSpinner size="medium" />
+                            <p className="mt-4 text-sm text-gray-600">Enviando documento...</p>
+                            <p className="mt-1 text-xs text-gray-500">Por favor, aguarde</p>
+                        </div>
+                    ) : (
+                        <>
+                            <div>
+                                <label className="text-sm font-medium text-gray-700">Arquivo</label>
+                                <input type="file" required onChange={(e) => setFile(e.target.files?.[0] || null)} disabled={isLoading} className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"/>
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-gray-700">Fase do Projeto</label>
+                                <select value={phaseId} onChange={(e) => setPhaseId(Number(e.target.value))} disabled={isLoading} className="mt-1 w-full rounded-md border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    {phases.map(p => <option key={p.id} value={p.id}>{p.id}. {p.title}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-gray-700">Descrição (Opcional)</label>
+                                <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ex: Contrato Social V2" disabled={isLoading} className="mt-1 w-full rounded-md border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"/>
+                            </div>
+                        </>
+                    )}
                 </div>
                 <div className="flex justify-end space-x-3 p-4 border-t bg-gray-50">
-                    <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold text-sm hover:bg-gray-300">Cancelar</button>
-                    <button type="submit" className="px-4 py-2 bg-brand-secondary text-white rounded-lg font-semibold text-sm hover:bg-brand-primary">Enviar</button>
+                    <button type="button" onClick={onClose} disabled={isLoading} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold text-sm hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">Cancelar</button>
+                    <button type="submit" disabled={isLoading} className="px-4 py-2 bg-brand-secondary text-white rounded-lg font-semibold text-sm hover:bg-brand-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                        {isLoading ? (
+                            <>
+                                <div style={{ width: '14px', height: '14px', borderRadius: '50%', borderTop: '2px solid white', borderRight: '2px solid transparent', borderBottom: '2px solid transparent', borderLeft: '2px solid transparent', animation: 'spin 1s linear infinite' }}></div>
+                                Enviando...
+                            </>
+                        ) : (
+                            'Enviar'
+                        )}
+                    </button>
                 </div>
             </form>
         </div>
@@ -119,9 +151,8 @@ const DocumentsView: React.FC<DocumentsViewProps> = ({ project, users, onBack, o
     }
   };
 
-  const handleUpload = (file: File, phaseId: number, description: string) => {
-    onUploadDocument(project.id, phaseId, file, description);
-    setIsUploadModalOpen(false);
+  const handleUpload = async (file: File, phaseId: number, description: string) => {
+    await onUploadDocument(project.id, phaseId, file, description);
   }
 
   return (

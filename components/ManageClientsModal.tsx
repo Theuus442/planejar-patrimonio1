@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Project, User, UserRole } from '../types';
 import Icon from './Icon';
+import LoadingSpinner from './LoadingSpinner';
 
 interface ManageClientsModalProps {
   isOpen: boolean;
@@ -14,12 +15,20 @@ interface ManageClientsModalProps {
 const ManageClientsModal: React.FC<ManageClientsModalProps> = ({ isOpen, onClose, project, onUpdateProject, allUsers, onAddUser }) => {
   const [newClient, setNewClient] = useState({ name: '', email: '', password: '', clientType: 'partner' as 'partner' | 'interested' });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRemoving, setIsRemoving] = useState<string | null>(null);
+
+  const spinnerStyles = `
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  `;
 
   const projectClients = useMemo(() => {
     return project.clientIds.map(id => allUsers.find(u => u.id === id)).filter((u): u is User => !!u);
   }, [project.clientIds, allUsers]);
 
-  const handleAddClient = () => {
+  const handleAddClient = async () => {
     setError('');
     if (!newClient.name.trim() || !newClient.email.trim() || !newClient.password.trim()) {
         setError('Nome, e-mail e senha são obrigatórios.');
@@ -31,32 +40,42 @@ const ManageClientsModal: React.FC<ManageClientsModalProps> = ({ isOpen, onClose
         return;
     }
 
-    const newUser: User = {
-        id: `user-${Date.now()}`,
-        name: newClient.name,
-        email: newClient.email,
-        password: newClient.password,
-        clientType: newClient.clientType,
-        role: UserRole.CLIENT,
-        requiresPasswordChange: true,
-    };
+    setIsLoading(true);
+    try {
+        const newUser: User = {
+            id: `user-${Date.now()}`,
+            name: newClient.name,
+            email: newClient.email,
+            password: newClient.password,
+            clientType: newClient.clientType,
+            role: UserRole.CLIENT,
+            requiresPasswordChange: true,
+        };
 
-    onAddUser(newUser);
-    // Only add if not already in the project (prevent duplicates)
-    if (!project.clientIds.includes(newUser.id)) {
-        onUpdateProject(project.id, { clientIds: [...project.clientIds, newUser.id] });
+        onAddUser(newUser);
+        // Only add if not already in the project (prevent duplicates)
+        if (!project.clientIds.includes(newUser.id)) {
+            onUpdateProject(project.id, { clientIds: [...project.clientIds, newUser.id] });
+        }
+        setNewClient({ name: '', email: '', password: '', clientType: 'partner' });
+    } finally {
+        setIsLoading(false);
     }
-    setNewClient({ name: '', email: '', password: '', clientType: 'partner' });
   };
 
-  const handleRemoveClient = (clientId: string) => {
+  const handleRemoveClient = async (clientId: string) => {
     if (project.clientIds.length <= 1) {
         alert("O projeto deve ter pelo menos um cliente.");
         return;
     }
     if (window.confirm("Tem certeza que deseja remover este cliente do projeto? O usuário não será deletado do sistema.")) {
-      const updatedClientIds = project.clientIds.filter(id => id !== clientId);
-      onUpdateProject(project.id, { clientIds: updatedClientIds });
+      setIsRemoving(clientId);
+      try {
+        const updatedClientIds = project.clientIds.filter(id => id !== clientId);
+        onUpdateProject(project.id, { clientIds: updatedClientIds });
+      } finally {
+        setIsRemoving(null);
+      }
     }
   };
 
@@ -64,6 +83,7 @@ const ManageClientsModal: React.FC<ManageClientsModalProps> = ({ isOpen, onClose
 
   return (
     <>
+      <style>{spinnerStyles}</style>
       <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} aria-hidden="true"></div>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="relative bg-white w-full max-w-2xl rounded-lg shadow-xl flex flex-col max-h-[90vh]">
@@ -91,7 +111,19 @@ const ManageClientsModal: React.FC<ManageClientsModalProps> = ({ isOpen, onClose
                             <p className="text-xs text-gray-500">{client.email}</p>
                         </div>
                     </div>
-                    <button onClick={() => handleRemoveClient(client.id)} className="text-red-500 hover:text-red-700 font-medium text-sm">Remover</button>
+                    <button
+                      onClick={() => handleRemoveClient(client.id)}
+                      disabled={isRemoving === client.id}
+                      className="text-red-500 hover:text-red-700 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
+                      {isRemoving === client.id ? (
+                        <>
+                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', borderTop: '2px solid #ef4444', borderRight: '2px solid transparent', borderBottom: '2px solid transparent', borderLeft: '2px solid transparent', animation: 'spin 1s linear infinite' }}></div>
+                          Removendo...
+                        </>
+                      ) : (
+                        'Remover'
+                      )}
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -101,18 +133,56 @@ const ManageClientsModal: React.FC<ManageClientsModalProps> = ({ isOpen, onClose
               <h3 className="font-semibold text-gray-800 mb-4">Adicionar Novo Cliente ao Projeto</h3>
               <div className="p-4 border rounded-lg bg-gray-50 space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" placeholder="Nome do cliente" value={newClient.name} onChange={(e) => setNewClient(p => ({ ...p, name: e.target.value }))} className="w-full px-3 py-2 text-sm border-gray-300 rounded-md" />
-                    <input type="email" placeholder="E-mail" value={newClient.email} onChange={(e) => setNewClient(p => ({ ...p, email: e.target.value }))} className="w-full px-3 py-2 text-sm border-gray-300 rounded-md" />
+                    <input
+                      type="text"
+                      placeholder="Nome do cliente"
+                      value={newClient.name}
+                      onChange={(e) => setNewClient(p => ({ ...p, name: e.target.value }))}
+                      disabled={isLoading}
+                      className="w-full px-3 py-2 text-sm border-gray-300 rounded-md disabled:bg-gray-200 disabled:cursor-not-allowed"
+                    />
+                    <input
+                      type="email"
+                      placeholder="E-mail"
+                      value={newClient.email}
+                      onChange={(e) => setNewClient(p => ({ ...p, email: e.target.value }))}
+                      disabled={isLoading}
+                      className="w-full px-3 py-2 text-sm border-gray-300 rounded-md disabled:bg-gray-200 disabled:cursor-not-allowed"
+                    />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="password" placeholder="Senha provisória" value={newClient.password} onChange={(e) => setNewClient(p => ({ ...p, password: e.target.value }))} className="w-full px-3 py-2 text-sm border-gray-300 rounded-md" />
-                    <select value={newClient.clientType} onChange={(e) => setNewClient(p => ({ ...p, clientType: e.target.value as any }))} className="w-full px-3 py-2 text-sm border-gray-300 rounded-md">
+                    <input
+                      type="password"
+                      placeholder="Senha provisória"
+                      value={newClient.password}
+                      onChange={(e) => setNewClient(p => ({ ...p, password: e.target.value }))}
+                      disabled={isLoading}
+                      className="w-full px-3 py-2 text-sm border-gray-300 rounded-md disabled:bg-gray-200 disabled:cursor-not-allowed"
+                    />
+                    <select
+                      value={newClient.clientType}
+                      onChange={(e) => setNewClient(p => ({ ...p, clientType: e.target.value as any }))}
+                      disabled={isLoading}
+                      className="w-full px-3 py-2 text-sm border-gray-300 rounded-md disabled:bg-gray-200 disabled:cursor-not-allowed">
                         <option value="partner">Sócio</option>
                         <option value="interested">Interessado</option>
                     </select>
                 </div>
                 <div className="flex justify-end">
-                    <button type="button" onClick={handleAddClient} className="px-4 py-2 bg-brand-secondary text-white text-sm font-medium rounded-md hover:bg-brand-primary">Adicionar Cliente</button>
+                    <button
+                      type="button"
+                      onClick={handleAddClient}
+                      disabled={isLoading}
+                      className="px-4 py-2 bg-brand-secondary text-white text-sm font-medium rounded-md hover:bg-brand-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                      {isLoading ? (
+                        <>
+                          <div style={{ width: '14px', height: '14px', borderRadius: '50%', borderTop: '2px solid white', borderRight: '2px solid transparent', borderBottom: '2px solid transparent', borderLeft: '2px solid transparent', animation: 'spin 1s linear infinite' }}></div>
+                          Adicionando...
+                        </>
+                      ) : (
+                        'Adicionar Cliente'
+                      )}
+                    </button>
                 </div>
                 {error && <p className="text-xs text-red-500 text-right">{error}</p>}
               </div>
